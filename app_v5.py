@@ -850,26 +850,44 @@ def index():
                         fecha_str = now_local().strftime(fecha_formato)
                         nombre_final = f"{nombre_base}-{fecha_str}{ext}"
                         ruta_final = os.path.join(LISTAS_PATH, nombre_final)
-                        # Marcar como OLD las listas previas vigentes del mismo proveedor
+                        # Política: solo 1 versión OLD por proveedor.
+                        # Pasos: eliminar cualquier OLD existente del proveedor, luego renombrar la vigente a OLD.
                         try:
                             norm_prov_subida = normalize_text(nombre_base)
-                            for existing in os.listdir(LISTAS_PATH):
-                                if not existing.lower().endswith(('.xlsx','.xls')): continue
-                                if 'old' in existing.lower():
+                            archivos = os.listdir(LISTAS_PATH)
+                            # 1) Borrar OLD previas del proveedor
+                            for existing in archivos:
+                                if not existing.lower().endswith(('.xlsx', '.xls')):
                                     continue
+                                if 'old' in existing.lower():
+                                    prov_part_old = os.path.splitext(existing)[0].split('-')[0]
+                                    if normalize_text(prov_part_old) == norm_prov_subida:
+                                        try:
+                                            os.remove(os.path.join(LISTAS_PATH, existing))
+                                        except Exception:
+                                            pass
+                            # 2) Renombrar la vigente (si existe) a OLD
+                            for existing in archivos:
+                                if not existing.lower().endswith(('.xlsx', '.xls')):
+                                    continue
+                                if 'old' in existing.lower():
+                                    continue  # ya hemos limpiado las old
                                 prov_part = os.path.splitext(existing)[0].split('-')[0]
                                 if normalize_text(prov_part) == norm_prov_subida:
-                                    old_src = os.path.join(LISTAS_PATH, existing)
+                                    src_path = os.path.join(LISTAS_PATH, existing)
                                     base_no_ext, ext_exist = os.path.splitext(existing)
-                                    propuesta = f"{base_no_ext}-OLD{ext_exist}"
-                                    old_dst = os.path.join(LISTAS_PATH, propuesta)
-                                    if os.path.exists(old_dst):
-                                        # evitar colisión añadiendo timestamp
-                                        ts = now_local().strftime('%H%M%S')
-                                        old_dst = os.path.join(LISTAS_PATH, f"{base_no_ext}-OLD-{ts}{ext_exist}")
-                                    os.rename(old_src, old_dst)
+                                    dst_path = os.path.join(LISTAS_PATH, f"{base_no_ext}-OLD{ext_exist}")
+                                    # Si por alguna razón quedó un archivo destino, lo eliminamos para sobreescribir limpio
+                                    if os.path.exists(dst_path):
+                                        try: os.remove(dst_path)
+                                        except Exception: pass
+                                    try:
+                                        os.rename(src_path, dst_path)
+                                    except Exception as e_rn:
+                                        resultados_subida.append(f"⚠️ No se pudo renombrar a OLD: {existing} -> {e_rn}")
+                                    break  # solo una vigente
                         except Exception as e_mark:
-                            resultados_subida.append(f"⚠️ Aviso al marcar OLD previas: {e_mark}")
+                            resultados_subida.append(f"⚠️ Aviso al gestionar versiones OLD: {e_mark}")
                         # Guardar (overwrite permitido)
                         archivo.save(ruta_final)
                         resultados_subida.append(f"✅ {nombre_orig} -> {nombre_final}")
