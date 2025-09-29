@@ -36,6 +36,16 @@ python app_v5.py
 5. Ajusta `start` command: `python app_v5.py` (o usa el `Procfile` añadido con `web: python app_v5.py`).
 6. (Opcional recomendado) Modifica el código para usar el puerto dinámico `PORT` que Railway inyecta (puedo agregarlo si lo pides).
 
+### Persistencia de archivos Excel (Railway Volume)
+Por defecto los Excel se guardan en `listas_excel/` dentro del contenedor. Ese filesystem se pierde en cada nuevo deploy. Para que sobrevivan:
+
+1. Crea un Volume en tu servicio de Railway (ej: nombre `data`, mount path `/data`).
+2. Agrega la variable de entorno `LISTAS_PATH=/data/listas_excel`.
+3. Redeploy. A partir de ahí las listas nuevas se conservarán.
+4. (Opcional) Sube nuevamente las listas actuales para poblar el volumen.
+
+Sin `LISTAS_PATH`, el sistema usa la carpeta local empaquetada (no persistente en PaaS). Posteriormente podrás migrar a base de datos para búsquedas más rápidas.
+
 ## Migración de Datos
 Usa el script `migrar_json_a_pg.py` para cargar los datos actuales de `datos_v2.json` y `historial.json`.
 

@@ -19,7 +19,11 @@ try:
     from psycopg.rows import dict_row
 except ImportError:  # Permite correr sin PostgreSQL hasta instalar deps
     psycopg = None
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    def load_dotenv(*args, **kwargs):
+        return False
 
 try:
     load_dotenv()
@@ -40,7 +44,7 @@ else:
 
 DATA_FILE = os.path.join(base_path, "datos_v2.json") 
 HISTORIAL_FILE = os.path.join(base_path, "historial.json") 
-LISTAS_PATH = os.path.join(base_path, "listas_excel")
+LISTAS_PATH = os.getenv('LISTAS_PATH', os.path.join(base_path, "listas_excel"))
 AUTH_FILE = os.path.join(base_path, "auth.json")
 
 os.makedirs(LISTAS_PATH, exist_ok=True)
