@@ -31,3 +31,4 @@ historial.json
 datos_v2.json
 listas_excel/*
 !listas_excel/.gitkeep
+auth.json

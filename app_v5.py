@@ -1,5 +1,5 @@
 # --- IMPORTACIONES ---
-from flask import Flask, render_template, request, send_from_directory, abort
+from flask import Flask, render_template, request, send_from_directory, abort, redirect, url_for, session
 import os
 import json
 import tempfile
@@ -12,17 +12,13 @@ from datetime import datetime
 import pandas as pd
 import re
 import unicodedata
+from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 try:
-    import psycopg2
-    from psycopg2.extras import RealDictCursor, Json
+    import psycopg
+    from psycopg.rows import dict_row
 except ImportError:  # Permite correr sin PostgreSQL hasta instalar deps
-    psycopg2 = None
-    RealDictCursor = None
-    class Json:  # Fallback mínimo
-        def __init__(self, v):
-            self.adapted = v
-        def getquoted(self):
-            return repr(json.dumps(self.adapted))
+    psycopg = None
 from dotenv import load_dotenv
 
 try:
@@ -31,6 +27,7 @@ except Exception:
     pass
 
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-change-me')
 app.config['MAX_CONTENT_LENGTH'] = 25 * 1024 * 1024  # 25MB por archivo
 app.config['UPLOAD_EXTENSIONS'] = ['.xlsx', '.xls']
 app.config['UPLOAD_FOLDER'] = ''  # Se establecerá luego a LISTAS_PATH
@@ -44,12 +41,13 @@ else:
 DATA_FILE = os.path.join(base_path, "datos_v2.json") 
 HISTORIAL_FILE = os.path.join(base_path, "historial.json") 
 LISTAS_PATH = os.path.join(base_path, "listas_excel")
+AUTH_FILE = os.path.join(base_path, "auth.json")
 
 os.makedirs(LISTAS_PATH, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = LISTAS_PATH
 
 # --- DB CONFIG ---
-DATABASE_URL = os.getenv('DATABASE_URL') if psycopg2 else None
+DATABASE_URL = os.getenv('DATABASE_URL') if psycopg else None
 DEBUG_LOG = os.getenv('DEBUG_LOG', '0') == '1'
 
 def log_debug(*parts):
@@ -60,11 +58,11 @@ def log_debug(*parts):
             pass
 
 def get_pg_conn():
-    if not DATABASE_URL or not psycopg2:
-        log_debug('get_pg_conn: sin DATABASE_URL o psycopg2 no disponible.')
+    if not DATABASE_URL or not psycopg:
+        log_debug('get_pg_conn: sin DATABASE_URL o psycopg no disponible.')
         return None
     try:
-        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+        conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
         log_debug('Conexión PostgreSQL establecida.')
         return conn
     except Exception as e:
@@ -72,7 +70,7 @@ def get_pg_conn():
         return None
 
 def ensure_tables():
-    if not DATABASE_URL or not psycopg2:
+    if not DATABASE_URL or not psycopg:
         log_debug('ensure_tables: se omite (sin DB).')
         return
     conn = get_pg_conn()
@@ -97,6 +95,12 @@ def ensure_tables():
                 precio_final DOUBLE PRECISION,
                 observaciones TEXT
             );
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id SERIAL PRIMARY KEY,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT NOW()
+            );
             """)
         log_debug('ensure_tables: tablas verificadas.')
     except Exception as e:
@@ -106,6 +110,130 @@ def ensure_tables():
         except Exception: pass
 
 ensure_tables()
+
+# --- AUTENTICACIÓN BÁSICA ---
+def load_credentials():
+    """Carga las credenciales desde PostgreSQL si está disponible; si no, desde archivo.
+    Si no existen, crea el usuario por defecto.
+    """
+    # PostgreSQL preferente
+    if DATABASE_URL and psycopg:
+        try:
+            with get_pg_conn() as conn, conn.cursor() as cur:
+                cur.execute("SELECT username, password_hash FROM usuarios ORDER BY id ASC LIMIT 1")
+                row = cur.fetchone()
+                if row:
+                    return {'username': row['username'], 'password_hash': row['password_hash']}
+                # No hay usuario -> crear por defecto
+                default_hash = generate_password_hash('20052016')
+                cur.execute("INSERT INTO usuarios (username, password_hash) VALUES (%s, %s)", ('CPauluk', default_hash))
+                conn.commit()
+                return {'username': 'CPauluk', 'password_hash': default_hash}
+        except Exception as e:
+            log_debug('load_credentials: fallo PG, se usa archivo', e)
+    # Fallback archivo
+    if os.path.exists(AUTH_FILE):
+        try:
+            with open(AUTH_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if 'username' in data and 'password_hash' in data:
+                    return data
+        except Exception as e:
+            log_debug('load_credentials: error leyendo auth.json', e)
+    # Inicial por defecto en archivo
+    creds = {'username': 'CPauluk', 'password_hash': generate_password_hash('20052016')}
+    save_credentials(creds)
+    return creds
+
+def save_credentials(data):
+    """Guarda credenciales en PostgreSQL o archivo según disponibilidad."""
+    if DATABASE_URL and psycopg:
+        try:
+            with get_pg_conn() as conn, conn.cursor() as cur:
+                # Intentar update primero
+                cur.execute("UPDATE usuarios SET username=%s, password_hash=%s WHERE id = (SELECT id FROM usuarios ORDER BY id ASC LIMIT 1)", (data['username'], data['password_hash']))
+                if cur.rowcount == 0:
+                    cur.execute("INSERT INTO usuarios (username, password_hash) VALUES (%s, %s)", (data['username'], data['password_hash']))
+                conn.commit()
+                return
+        except Exception as e:
+            log_debug('save_credentials: fallo PG, se guarda archivo', e)
+    try:
+        with open(AUTH_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        log_debug('save_credentials: error escribiendo auth.json', e)
+
+credentials_cache = load_credentials()
+
+def login_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login', next=request.path))
+        return fn(*args, **kwargs)
+    return wrapper
+
+@app.before_request
+def inject_user():
+    # Para acceso en templates
+    request.current_user = session.get('username') if session.get('logged_in') else None
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    global credentials_cache
+    mensaje = None
+    if request.method == 'POST':
+        user = request.form.get('username','').strip()
+        pwd = request.form.get('password','')
+        # Recargar cache por si cambió en otro proceso
+        credentials_cache = load_credentials()
+        if user.lower() == credentials_cache['username'].lower() and check_password_hash(credentials_cache['password_hash'], pwd):
+            session['logged_in'] = True
+            session['username'] = credentials_cache['username']
+            return redirect(request.args.get('next') or url_for('index'))
+        else:
+            mensaje = 'Credenciales inválidas.'
+    return render_template('login.html', mensaje=mensaje)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+@app.route('/cambiar_credenciales', methods=['GET','POST'])
+@login_required
+def cambiar_credenciales():
+    global credentials_cache
+    mensaje = None
+    exito = False
+    if request.method == 'POST':
+        actual = request.form.get('actual_password','')
+        nuevo_user = request.form.get('nuevo_usuario','').strip()
+        nuevo_pwd = request.form.get('nuevo_password','')
+        nuevo_pwd2 = request.form.get('nuevo_password2','')
+        # Refrescar credenciales actuales desde storage preferente
+        credentials_cache = load_credentials()
+        if not check_password_hash(credentials_cache['password_hash'], actual):
+            mensaje = 'La contraseña actual no es correcta.'
+        elif not nuevo_user or not nuevo_pwd:
+            mensaje = 'Usuario y contraseña nuevos no pueden estar vacíos.'
+        elif nuevo_pwd != nuevo_pwd2:
+            mensaje = 'Las contraseñas nuevas no coinciden.'
+        else:
+            proposed = {
+                'username': nuevo_user,
+                'password_hash': generate_password_hash(nuevo_pwd)
+            }
+            try:
+                save_credentials(proposed)
+                credentials_cache = proposed
+                session['username'] = nuevo_user
+                mensaje = 'Credenciales actualizadas correctamente.'
+                exito = True
+            except Exception as e:
+                mensaje = f'Error guardando nuevas credenciales: {e}'
+    return render_template('cambiar_credenciales.html', mensaje=mensaje, exito=exito, usuario_actual=credentials_cache['username'])
 
 # --- ESTRUCTURA DE DATOS POR DEFECTO ---
 default_proveedores = {
@@ -216,7 +344,7 @@ def load_proveedores():
                     return {r['id']: r['data'] for r in rows}
                 # Si vacío, insertar default
                 for pid, pdata in default_proveedores.items():
-                    cur.execute("INSERT INTO proveedores (id, data) VALUES (%s, %s) ON CONFLICT (id) DO NOTHING", (pid, Json(pdata)))
+                    cur.execute("INSERT INTO proveedores (id, data) VALUES (%s, %s::jsonb) ON CONFLICT (id) DO NOTHING", (pid, json.dumps(pdata)))
                 conn.commit()
                 return json.loads(json.dumps(default_proveedores))
         except Exception as e:
@@ -237,9 +365,9 @@ def save_proveedores(data):
             with get_pg_conn() as conn, conn.cursor() as cur:
                 for pid, pdata in data.items():
                     cur.execute("""
-                        INSERT INTO proveedores (id, data) VALUES (%s, %s)
+                        INSERT INTO proveedores (id, data) VALUES (%s, %s::jsonb)
                         ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data
-                    """, (pid, Json(pdata)))
+                    """, (pid, json.dumps(pdata)))
                 # Borrar los que no están ya
                 cur.execute("SELECT id FROM proveedores")
                 ids_db = {r['id'] for r in cur.fetchall()}
@@ -372,6 +500,7 @@ def core_math(precio, iva, descuentos, ganancias):
 
 # --- RUTA PRINCIPAL ---
 @app.route("/", methods=["GET", "POST"])
+@login_required
 def index():
     global proveedores 
     mensaje = None
@@ -458,7 +587,6 @@ def index():
                                 df[actual_cols['producto']] = df[actual_cols['producto']].apply(lambda x: normalize_text(formatear_pulgadas(x)))
                                 # Coincidencia: todas las palabras deben estar presentes en el nombre del producto
                                 condition = df[actual_cols['producto']].apply(lambda nombre: all(palabra in nombre for palabra in palabras))
-                            # ...existing code...
                             producto_rows = df[condition]
 
                             if not producto_rows.empty:
@@ -808,6 +936,7 @@ def index():
     )
 
 @app.route('/download_lista/<path:filename>')
+@login_required
 def download_lista(filename):
     # Seguridad básica: evitar path traversal
     if '..' in filename or filename.startswith('/'):
@@ -822,7 +951,7 @@ def download_lista(filename):
 
 @app.route('/health')
 def health():
-    modo_storage = 'postgresql' if (DATABASE_URL and psycopg2) else 'json'
+    modo_storage = 'postgresql' if (DATABASE_URL and psycopg) else 'json'
     prov_count = 'n/a'
     try:
         prov_count = len(proveedores)

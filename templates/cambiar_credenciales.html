@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-gray-100">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cambiar Credenciales</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-full">
+  <div class="bg-gray-800 py-6 mb-8">
+    <div class="max-w-3xl mx-auto px-4">
+      <h1 class="text-2xl font-bold text-white">Cambiar Usuario / Contraseña</h1>
+      <p class="text-gray-300 text-sm">Sesión actual: {{ usuario_actual }}</p>
+    </div>
+  </div>
+  <div class="max-w-3xl mx-auto px-4">
+    {% if mensaje %}
+      <div class="mb-6 rounded {{ 'bg-green-50 text-green-800' if exito else 'bg-yellow-50 text-yellow-800' }} px-4 py-3 text-sm">{{ mensaje }}</div>
+    {% endif %}
+    <form method="POST" class="bg-white shadow rounded-lg p-6 space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Contraseña Actual</label>
+        <input type="password" name="actual_password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Nuevo Usuario</label>
+          <input type="text" name="nuevo_usuario" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Nueva Contraseña</label>
+          <input type="password" name="nuevo_password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Repetir Nueva Contraseña</label>
+          <input type="password" name="nuevo_password2" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+        </div>
+      </div>
+      <div class="flex items-center justify-between">
+        <a href="/" class="text-sm text-indigo-600 hover:underline">⬅ Volver</a>
+        <button type="submit" class="inline-flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-white text-sm font-medium hover:bg-indigo-700">Actualizar Credenciales</button>
+      </div>
+    </form>
+    <div class="mt-8 text-right">
+      <a href="/logout" class="text-xs text-red-500 hover:underline">Cerrar Sesión</a>
+    </div>
+  </div>
+</body>
+</html>
