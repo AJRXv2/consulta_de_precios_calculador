@@ -1,0 +1,47 @@
+{
+    "Ñañu": {
+        "descuento": 0.0,
+        "iva": 0.21,
+        "ganancia": 0.6
+    },
+    "Bermon": {
+        "descuento": 0.14,
+        "iva": 0.21,
+        "ganancia": 0.6
+    },
+    "Berger": {
+        "descuento": 0.1,
+        "iva": 0.21,
+        "ganancia": 0.6
+    },
+    "Cachan": {
+        "descuento": 0.26,
+        "iva": 0.21,
+        "ganancia": 0.5
+    },
+    "Bremen": {
+        "descuento": 0.0,
+        "iva": 0.105,
+        "ganancia": 0.0
+    },
+    "Chiesa +21% +60%": {
+        "descuento": 0.0,
+        "iva": 0.21,
+        "ganancia": 0.6
+    },
+    "Chiesa +10.5% +60%": {
+        "descuento": 0.0,
+        "iva": 0.105,
+        "ganancia": 0.6
+    },
+    "Crossmaster -7% +21% +60%": {
+        "descuento": 0.07,
+        "iva": 0.21,
+        "ganancia": 0.6
+    },
+    "Crossmaster -7% +10.5% +60%": {
+        "descuento": 0.07,
+        "iva": 0.105,
+        "ganancia": 0.6
+    }
+}

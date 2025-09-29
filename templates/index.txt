@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora de Precios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background-color: #f2f2f2;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"], select {
+            width: 200px;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        input[type="submit"] {
+            margin-top: 15px;
+            padding: 8px 16px;
+        }
+        .resultado {
+            font-size: 1.2em;
+            color: green;
+            margin-top: 10px;
+        }
+        .mensaje {
+            margin-top: 12px;
+            padding: 8px;
+            background: #fffbdd;
+            border: 1px solid #f0e68c;
+            border-radius: 6px;
+        }
+        hr {
+            margin: 40px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>🧮 CALCULADORA DE PRECIOS POR PROVEEDOR</h2>
+
+    {% if mensaje %}
+        <div class="mensaje">{{ mensaje }}</div>
+    {% endif %}
+
+    <form method="post">
+        <input type="hidden" name="formulario" value="calcular">
+
+        <label>PROVEEDOR:</label>
+        <select name="proveedor" required>
+    {% for nombre in proveedores %}
+        <option value="{{ nombre }}" {% if nombre == request.form.get('proveedor') %}selected{% endif %}>
+            {{ nombre }}
+        </option>
+    {% endfor %}
+</select>
+
+        <label>PRECIO BASE:</label>
+        <input type="text" name="precio">
+
+        <input type="submit" value="CALCULAR">
+    </form>
+
+    {% if resultado %}
+        <div class="resultado">✅ PRECIO FINAL: ${{ resultado }}</div>
+    {% endif %}
+
+    <hr>
+
+    <h2>🔧 MODIFICAR PORCENTAJES</h2>
+    <form method="post">
+        <input type="hidden" name="formulario" value="editar">
+
+        <label>PROVEEDOR:</label>
+        <select name="editar_proveedor" onchange="this.form.submit()">
+            {% for nombre in proveedores %}
+                <option value="{{ nombre }}" {% if nombre == proveedor_seleccionado %}selected{% endif %}>{{ nombre }}</option>
+            {% endfor %}
+        </select>
+
+        {% if proveedor_seleccionado %}
+            <h3>EDITANDO: {{ proveedor_seleccionado }}</h3>
+            {% for clave, valor in datos.items() %}
+                <label>{{ clave.capitalize() }} (%):</label>
+                <input type="text" name="{{ clave }}" value="{{ (valor * 100)|round(2) }}">
+            {% endfor %}
+            <input type="submit" name="guardar" value="GUARDAR CAMBIOS">
+        {% endif %}
+    </form>
+
+</body>
+</html>

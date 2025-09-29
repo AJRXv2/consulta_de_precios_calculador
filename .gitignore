@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+.env
+venv/
+.build/
+*.sqlite3
+
+# Virtual environments
+env/
+.venv/
+
+# PyInstaller / build artifacts
+build/
+dist/
+*.spec
+*.exe
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local data files not for repo
+historial.json
+datos_v2.json
+listas_excel/*
+!listas_excel/.gitkeep

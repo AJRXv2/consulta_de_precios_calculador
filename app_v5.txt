@@ -1,0 +1,391 @@
+# --- IMPORTACIONES ---
+from flask import Flask, render_template, request
+import os
+import json
+import tempfile
+import sys
+import webbrowser
+from threading import Timer
+from waitress import serve
+import uuid 
+from datetime import datetime
+import pandas as pd
+import re
+import unicodedata
+
+app = Flask(__name__)
+
+# --- LÓGICA DE RUTAS PERSISTENTES ---
+if getattr(sys, 'frozen', False):
+    base_path = os.path.dirname(sys.executable)
+else:
+    base_path = os.path.dirname(__file__)
+
+DATA_FILE = os.path.join(base_path, "datos_v2.json") 
+HISTORIAL_FILE = os.path.join(base_path, "historial.json") 
+LISTAS_PATH = os.path.join(base_path, "listas_excel")
+
+os.makedirs(LISTAS_PATH, exist_ok=True)
+
+# --- ESTRUCTURA DE DATOS POR DEFECTO ---
+default_proveedores = {
+    "p001": {"nombre_base": "Ñañu", "descuento": 0.00, "iva": 0.21, "ganancia": 0.60, "es_dinamico": True},
+    "p002": {"nombre_base": "Bermon", "descuento": 0.14, "iva": 0.21, "ganancia": 0.60, "es_dinamico": True},
+    "p003": {"nombre_base": "Berger", "descuento": 0.10, "iva": 0.21, "ganancia": 0.60, "es_dinamico": True},
+    "p004": {"nombre_base": "Cachan", "descuento": 0.26, "iva": 0.21, "ganancia": 0.50, "es_dinamico": True},
+    "p005": {"nombre_base": "BremenTools", "descuento": 0.00, "iva": 0.21, "ganancia": 0.60, "es_dinamico": False},
+    "p006": {"nombre_base": "BremenBuloneria", "descuento": 0.00, "iva": 0.21, "ganancia": 0.60, "es_dinamico": False},
+    "p008": {"nombre_base": "Crossmaster", "descuento": 0.07, "iva": 0.21, "ganancia": 0.60, "es_dinamico": True},
+    "p009": {"nombre_base": "Chiesa", "descuento": 0.00, "iva": 0.21, "ganancia": 0.60, "es_dinamico": True}
+}
+
+# --- FUNCIONES AUXILIARES ---
+def normalize_text(text):
+    text = str(text)
+    text = ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
+    text = text.lower()
+    text = re.sub(r'[^a-z0-9\s]+', '', text)
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
+
+def format_pct(valor):
+    num_pct = abs(valor * 100) 
+    if num_pct == int(num_pct):
+        return f"{int(num_pct):02d}"
+    else:
+        return f"{num_pct:.1f}"
+
+def generar_nombre_visible(prov_data):
+    if not prov_data.get("es_dinamico", False):
+        return prov_data.get("nombre_base", "Sin Nombre")
+    base = prov_data.get("nombre_base", "")
+    desc = prov_data.get("descuento", 0)
+    iva = prov_data.get("iva", 0)
+    ganc = prov_data.get("ganancia", 0)
+    partes_nombre = [base]
+    if desc != 0: partes_nombre.append(f"DESC{format_pct(desc)}")
+    if iva != 0: partes_nombre.append(f"IVA{format_pct(iva)}")
+    if ganc != 0: partes_nombre.append(f"GAN{format_pct(ganc)}")
+    return " ".join(partes_nombre)
+
+def parse_percentage(raw):
+    if raw is None: return None
+    s = str(raw).strip().replace("%", "").replace(",", ".")
+    if s == "": return None
+    try:
+        v = float(s)
+    except ValueError: return None
+    if v > 1: v = v / 100.0
+    return v
+
+def formatear_precio(valor):
+    if valor is None or not isinstance(valor, (int, float)):
+        return "N/A"
+    return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+app.jinja_env.globals.update(generar_nombre_visible=generar_nombre_visible, formatear_precio=formatear_precio)
+
+# --- FUNCIONES DB ---
+def load_proveedores():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f: return json.load(f)
+        except Exception as e:
+            print(f"Warning: no se pudo leer {DATA_FILE} -> usando valores por defecto. Error: {e}")
+    return json.loads(json.dumps(default_proveedores))
+
+def save_proveedores(data):
+    dirpath = os.path.dirname(DATA_FILE) or "."
+    fd, tmp_path = tempfile.mkstemp(dir=dirpath)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as tmpf:
+            json.dump(data, tmpf, ensure_ascii=False, indent=4)
+        os.replace(tmp_path, DATA_FILE)
+    except Exception as e:
+        try: os.remove(tmp_path)
+        except Exception: pass
+        raise
+
+def load_historial():
+    if not os.path.exists(HISTORIAL_FILE): return []
+    try:
+        with open(HISTORIAL_FILE, "r", encoding="utf-8") as f: return json.load(f)
+    except Exception: return []
+
+def atomic_save_historial_list(historial_list):
+    dirpath = os.path.dirname(HISTORIAL_FILE) or "."
+    fd, tmp_path = tempfile.mkstemp(dir=dirpath)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as tmpf:
+            json.dump(historial_list, tmpf, ensure_ascii=False, indent=4)
+        os.replace(tmp_path, HISTORIAL_FILE)
+    except Exception as e:
+        try: os.remove(tmp_path)
+        except Exception: pass
+        raise
+
+def add_entry_to_historial(nueva_entrada):
+    historial_actual = load_historial()
+    historial_actual.append(nueva_entrada)
+    atomic_save_historial_list(historial_actual)
+
+# --- LÓGICA DE CÁLCULO ---
+proveedores = load_proveedores()
+
+def core_math(precio, iva, descuentos, ganancias):
+    precio_actual = precio
+    for desc in descuentos:
+        if desc is not None: precio_actual *= (1 - desc)
+    if iva is not None: precio_actual *= (1 + iva)
+    for ganc in ganancias:
+        if ganc is not None: precio_actual *= (1 + ganc)
+    return round(precio_actual, 4)
+
+# --- RUTA PRINCIPAL ---
+@app.route("/", methods=["GET", "POST"])
+def index():
+    global proveedores 
+    mensaje = None
+    resultado_auto = None
+    resultado_manual = None
+    productos_encontrados = None
+    proveedor_id_seleccionado = None
+    datos_seleccionados = {}
+
+    if request.method == "POST":
+        formulario = request.form.get("formulario")
+
+        if formulario == "consulta_producto":
+            termino_busqueda = request.form.get("termino_busqueda", "").strip()
+            if not termino_busqueda:
+                mensaje = "⚠️ POR FAVOR, INGRESA UN CÓDIGO O NOMBRE."
+            else:
+                productos_encontrados = []
+                PROVEEDOR_CONFIG = {
+                    'brementools': {'codigo': ['codigo'], 'producto': ['producto'], 'precios_a_mostrar': ['precio', 'precio de venta'], 'iva': ['iva'], 'extra_datos': []},
+                    'bremenbuloneria': {'codigo': ['codigo'], 'producto': ['producto'], 'precios_a_mostrar': ['precio neto unitario'], 'iva': ['iva'], 'extra_datos': ['rosca', 'terminacion', 'unidades por caja']},
+                    'crossmaster': {'codigo': ['codigo'], 'producto': ['descripcion'], 'precios_a_mostrar': ['precio lista'], 'iva': ['iva'], 'extra_datos': []},
+                    'berger': {'codigo': ['cod'], 'producto': ['detalle'], 'precios_a_mostrar': ['pventa'], 'iva': ['iva'], 'extra_datos': ['marca']},
+                    'chiesa': {'codigo': ['codigo'], 'producto': ['descripcion'], 'precios_a_mostrar': ['pr.unit'], 'iva': ['iva'], 'extra_datos': ['dcto', 'oferta']}
+                }
+
+                for filename in os.listdir(LISTAS_PATH):
+                    if not filename.endswith(('.xlsx', '.xls')): continue
+                    try:
+                        nombre_proveedor_archivo = normalize_text(''.join(filter(str.isalpha, os.path.splitext(filename)[0])))
+                        config = PROVEEDOR_CONFIG.get(nombre_proveedor_archivo)
+                        if not config: continue
+
+                        proveedor_display_name = next((p.get("nombre_base") for p in proveedores.values() if normalize_text(p.get("nombre_base","")) == nombre_proveedor_archivo), nombre_proveedor_archivo.title())
+                        file_path = os.path.join(LISTAS_PATH, filename)
+                        all_sheets = pd.read_excel(file_path, sheet_name=None, header=None)
+
+                        for sheet_name, df_sheet in all_sheets.items():
+                            df_peek = df_sheet.head(30)
+                            header_row_index = next((i for i, row in df_peek.iterrows() if any(alias in normalize_text(' '.join(str(c) for c in row.values)) for alias in config['codigo'])), -1)
+                            if header_row_index == -1: continue
+
+                            df = pd.read_excel(file_path, sheet_name=sheet_name, header=header_row_index)
+                            df.columns = [normalize_text(c) for c in df.columns]
+
+                            actual_cols = {
+                                'codigo': next((alias for alias in config['codigo'] if alias in df.columns), None),
+                                'producto': next((alias for alias in config['producto'] if alias in df.columns), None),
+                                'iva': next((alias for alias in config.get('iva', []) if alias in df.columns), None),
+                                'precios_a_mostrar': [alias for alias in config.get('precios_a_mostrar', []) if alias in df.columns],
+                                'extra_datos': [alias for alias in config.get('extra_datos', []) if alias in df.columns]
+                            }
+                            if not all([actual_cols['codigo'], actual_cols['producto']]): continue
+                            
+                            if termino_busqueda.isdigit() and len(termino_busqueda) > 2:
+                                df[actual_cols['codigo']] = df[actual_cols['codigo']].apply(lambda x: str(x).split('.')[0] if pd.notna(x) else '')
+                                condition = (df[actual_cols['codigo']] == termino_busqueda)
+                            else:
+                                df[actual_cols['producto']] = df[actual_cols['producto']].apply(lambda x: normalize_text(x))
+                                condition = df[actual_cols['producto']].str.contains(normalize_text(termino_busqueda), na=False)
+                            
+                            producto_rows = df[condition]
+
+                            if not producto_rows.empty:
+                                for i, fila in producto_rows.iterrows():
+                                    producto_iva = "N/A"
+                                    if actual_cols['iva'] and pd.notna(fila[actual_cols['iva']]):
+                                        try:
+                                            iva_val_str = str(fila[actual_cols['iva']]).replace('%','').replace(',','.')
+                                            iva_float = float(iva_val_str)
+                                            if iva_float < 1.0 and iva_float != 0: iva_float *= 100
+                                            producto_iva = f"{iva_float:.1f}%".replace(".0%", "%")
+                                        except: producto_iva = str(fila[actual_cols['iva']])
+                                    
+                                    precios = {col.replace("_", " ").title(): fila.get(col) for col in actual_cols['precios_a_mostrar']}
+                                    extra_datos = {col.replace("_", " ").title(): fila.get(col) for col in actual_cols['extra_datos']}
+
+                                    productos_encontrados.append({
+                                        "codigo": fila[actual_cols['codigo']], "producto": fila[actual_cols['producto']],
+                                        "proveedor": f"{proveedor_display_name} (Hoja: {sheet_name})", "iva": producto_iva, 
+                                        "precios": precios, "extra_datos": extra_datos
+                                    })
+                    except Exception as e:
+                        mensaje = f"❌ ERROR PROCESANDO {filename}: {e}"
+                
+                if not productos_encontrados and not mensaje:
+                    mensaje = f"ℹ️ NO SE ENCONTRARON RESULTADOS PARA '{termino_busqueda}'."
+                elif productos_encontrados:
+                    mensaje = f"✅ SE ENCONTRARON {len(productos_encontrados)} COINCIDENCIA(S)."
+        
+        elif formulario == "calcular_auto":
+            proveedor_id = request.form.get("proveedor_id")
+            precio_raw = request.form.get("precio")
+            if proveedor_id and precio_raw:
+                try:
+                    precio = float(precio_raw.replace(".", "").replace(",", "."))
+                    datos_prov = proveedores.get(proveedor_id)
+                    descuentos = [datos_prov.get("descuento", 0)]
+                    ganancias = [datos_prov.get("ganancia", 0)]
+                    iva = datos_prov.get("iva", 0)
+                    precio_final = core_math(precio, iva, descuentos, ganancias)
+                    
+                    nombre_visible_prov = generar_nombre_visible(proveedores[proveedor_id])
+                    resultado_auto = f"{formatear_precio(precio_final)} (Proveedor: {nombre_visible_prov})"
+                    add_entry_to_historial({
+                        "id_historial": str(uuid.uuid4()), "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "tipo_calculo": "Automático", "proveedor_nombre": nombre_visible_prov,
+                        "producto": "N/A", "precio_base": precio, "porcentajes": {"descuento": descuentos[0], "iva": iva, "ganancia": ganancias[0]},
+                        "precio_final": precio_final, "observaciones": ""
+                    })
+                except Exception as e:
+                    mensaje = f"⚠️ ERROR CÁLCULO AUTO: {e}"
+            else:
+                mensaje = "⚠️ COMPLETA PROVEEDOR Y PRECIO."
+
+        elif formulario == "calcular_manual":
+            precio_raw = request.form.get("manual_precio")
+            if precio_raw:
+                try:
+                    precio = float(precio_raw.replace(".", "").replace(",", "."))
+                    nombre_prov_label = request.form.get("manual_proveedor_label", "").strip() or "N/A"
+                    producto_label = request.form.get("manual_producto", "")
+                    obs_label = request.form.get("manual_observaciones", "")
+
+                    desc_manual = parse_percentage(request.form.get("manual_descuento")) or 0.0
+                    desc_extra1 = parse_percentage(request.form.get("desc_extra_1")) or 0.0
+                    desc_extra2 = parse_percentage(request.form.get("desc_extra_2")) or 0.0
+                    
+                    iva_manual = parse_percentage(request.form.get("manual_iva")) or 0.0
+                    
+                    ganc_manual = parse_percentage(request.form.get("manual_ganancia")) or 0.0
+                    ganc_extra = parse_percentage(request.form.get("ganancia_extra")) or 0.0
+
+                    descuentos = [desc_manual, desc_extra1, desc_extra2]
+                    ganancias = [ganc_manual, ganc_extra]
+                    
+                    precio_final = core_math(precio, iva_manual, descuentos, ganancias)
+                    resultado_manual = f"{formatear_precio(precio_final)}"
+                    
+                    eq_descuento = 1 - ((1 - desc_manual) * (1 - desc_extra1) * (1 - desc_extra2))
+                    eq_ganancia = ((1 + ganc_manual) * (1 + ganc_extra)) - 1
+
+                    mensaje = "✅ Cálculo Manual Realizado y Guardado en Historial."
+                    add_entry_to_historial({
+                        "id_historial": str(uuid.uuid4()), "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "tipo_calculo": "Manual", "proveedor_nombre": nombre_prov_label, 
+                        "producto": producto_label or "N/A", "precio_base": precio,
+                        "porcentajes": {"descuento": eq_descuento, "iva": iva_manual, "ganancia": eq_ganancia},
+                        "precio_final": precio_final, "observaciones": obs_label or ""
+                    })
+                except Exception as e:
+                    mensaje = f"⚠️ ERROR CÁLCULO MANUAL: {e}"
+            else:
+                mensaje = "⚠️ PRECIO MANUAL NO PUEDE ESTAR VACÍO."
+        
+        elif formulario == "editar":
+            proveedor_id_seleccionado = request.form.get("editar_proveedor_id")
+            if "guardar" in request.form and proveedor_id_seleccionado:
+                target_data = proveedores.get(proveedor_id_seleccionado, {})
+                target_data["nombre_base"] = request.form.get("edit_nombre_base", target_data["nombre_base"])
+                target_data["es_dinamico"] = request.form.get("edit_es_dinamico") == "true"
+                for clave in ["descuento", "iva", "ganancia"]:
+                    parsed = parse_percentage(request.form.get(clave))
+                    if parsed is not None:
+                        target_data[clave] = parsed
+                proveedores[proveedor_id_seleccionado] = target_data
+                try:
+                    save_proveedores(proveedores)
+                    mensaje = "✅ CAMBIOS GUARDADOS."
+                except Exception as e:
+                    mensaje = f"❌ ERROR GUARDANDO DATOS.JSON: {e}"
+            if proveedor_id_seleccionado:
+                datos_seleccionados = proveedores.get(proveedor_id_seleccionado, {})
+
+        elif formulario == "agregar":
+            nombre_base = request.form.get("nuevo_nombre_base", "").strip()
+            if not nombre_base:
+                mensaje = "⚠️ ERROR: EL NOMBRE BASE NO PUEDE ESTAR VACÍO."
+            else:
+                proveedores[str(uuid.uuid4())] = {
+                    "nombre_base": nombre_base, "es_dinamico": request.form.get("nuevo_es_dinamico") == "true",
+                    "descuento": parse_percentage(request.form.get("nuevo_descuento")) or 0.0,
+                    "iva": parse_percentage(request.form.get("nuevo_iva")) or 0.0,
+                    "ganancia": parse_percentage(request.form.get("nuevo_ganancia")) or 0.0
+                }
+                try:
+                    save_proveedores(proveedores)
+                    mensaje = f"✅ PROVEEDOR '{nombre_base}' AÑADIDO."
+                except Exception as e:
+                    mensaje = f"❌ ERROR GUARDANDO DATOS.JSON: {e}"
+
+        elif formulario == "borrar":
+            proveedor_id_a_borrar = request.form.get("borrar_proveedor_id")
+            if proveedor_id_a_borrar and proveedor_id_a_borrar in proveedores:
+                nombre_borrado = generar_nombre_visible(proveedores.pop(proveedor_id_a_borrar))
+                try:
+                    save_proveedores(proveedores)
+                    mensaje = f"✅ PROVEEDOR '{nombre_borrado}' BORRADO."
+                except Exception as e:
+                    mensaje = f"❌ ERROR GUARDANDO DATOS.JSON: {e}"
+            else:
+                mensaje = "⚠️ ERROR: PROVEEDOR NO ENCONTRADO O NO SELECCIONADO."
+        
+        elif formulario == "borrar_historial_seleccionado":
+            ids_para_borrar = request.form.getlist("historial_ids_a_borrar")
+            if ids_para_borrar:
+                nuevo_historial = [item for item in load_historial() if item.get("id_historial") not in ids_para_borrar]
+                try:
+                    atomic_save_historial_list(nuevo_historial)
+                    mensaje = f"✅ {len(ids_para_borrar)} ENTRADA(S) BORRADA(S)."
+                except Exception as e:
+                    mensaje = f"❌ ERROR GUARDANDO HISTORIAL: {e}"
+            else:
+                mensaje = "ℹ️ NO SE SELECCIONÓ NINGUNA ENTRADA."
+
+        elif formulario == "borrar_todo_historial":
+            try:
+                atomic_save_historial_list([])
+                mensaje = "✅ TODO EL HISTORIAL BORRADO."
+            except Exception as e:
+                mensaje = f"❌ ERROR BORRANDO TODO EL HISTORIAL: {e}"
+
+    historial = load_historial()
+    historial.reverse() 
+    lista_proveedores_display = sorted([(p_id, generar_nombre_visible(p_data)) for p_id, p_data in proveedores.items()], key=lambda x: x[1])
+
+    return render_template(
+        "index_v5.html",
+        proveedores_lista=lista_proveedores_display,
+        resultado_auto=resultado_auto,
+        resultado_manual=resultado_manual,
+        productos_encontrados=productos_encontrados,
+        mensaje=mensaje,
+        proveedor_id_seleccionado=proveedor_id_seleccionado,
+        datos_seleccionados=datos_seleccionados,
+        historial=historial 
+    )
+
+def abrir_navegador():
+    webbrowser.open_new('http://127.0.0.1:5000/')
+
+if __name__ == "__main__":
+    Timer(1, abrir_navegador).start()
+    print("Iniciando servidor de producción en http://127.0.0.1:5000/")
+    print(f"Las listas de precios en formato Excel deben guardarse en: {LISTAS_PATH}")
+    serve(app, host='0.0.0.0', port=5000)

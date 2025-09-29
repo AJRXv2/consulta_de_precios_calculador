@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-gray-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Precios Ferreteria Pauluk</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content.hidden { display: none; }
+    </style>
+</head>
+<body class="h-full">
+    <div class="min-h-full">
+        <div class="bg-gray-800 pb-32">
+            <header class="py-10">
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <h1 class="text-3xl font-bold tracking-tight text-white">Calculadora y Consulta de Precios</h1>
+                    <p class="text-gray-400 mt-1">Ferretería Pauluk</p>
+                </div>
+            </header>
+        </div>
+
+        <main class="-mt-32">
+            <div class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+                <div class="bg-white rounded-lg shadow px-5 py-6 sm:px-6">
+                    
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <a href="#" onclick="showTab('busqueda')" id="tab-busqueda" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium">Búsqueda</a>
+                            <a href="#" onclick="showTab('calculos')" id="tab-calculos" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium">Cálculos</a>
+                            <a href="#" onclick="showTab('gestion')" id="tab-gestion" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium">Gestión</a>
+                            <a href="#" onclick="showTab('historial')" id="tab-historial" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium">Historial</a>
+                        </nav>
+                    </div>
+
+                    {% if mensaje %}
+                        <div class="mt-6 rounded-md bg-yellow-50 p-4">
+                            <div class="flex"><div class="ml-3"><p class="text-sm font-medium text-yellow-800">{{ mensaje }}</p></div></div>
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-6">
+                        <!-- Pestaña de Búsqueda de Productos -->
+                        <div id="content-busqueda" class="tab-content hidden">
+                            <div class="card">
+                                <h2 class="text-xl font-semibold text-gray-900 mb-4">Búsqueda de Productos en Listas Excel</h2>
+                                <form method="POST" action="/">
+                                    <input type="hidden" name="formulario" value="consulta_producto">
+                                    <input type="hidden" class="active_tab_input" name="active_tab" value="busqueda">
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                                        <!-- Campo para Código o Nombre -->
+                                        <div class="md:col-span-2">
+                                            <label for="termino_busqueda" class="block text-sm font-medium text-gray-700">Código o Nombre del Producto:</label>
+                                            <input type="text" id="termino_busqueda" name="termino_busqueda" value="{{ request.form.get('termino_busqueda', '') }}" placeholder="Ej: 12345 o 'destornillador'" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        </div>
+                                        
+                                        <!-- Dropdown para Proveedor -->
+                                        <div>
+                                            <label for="proveedor_busqueda" class="block text-sm font-medium text-gray-700">Proveedor (Opcional):</label>
+                                            <select id="proveedor_busqueda" name="proveedor_busqueda" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                <option value="">-- Todos los Proveedores --</option>
+                                                {% for nombre_prov in lista_nombres_proveedores %}
+                                                    <option value="{{ nombre_prov }}" {% if nombre_prov == proveedor_buscado %}selected{% endif %}>
+                                                        {{ nombre_prov }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">Buscar Producto</button>
+                                    </div>
+
+                                    {# --- NUEVO CAMPO DE FILTRO --- #}
+                                    {% if productos_encontrados is not none %}
+                                    <div class="mt-6 border-t pt-4">
+                                        <label for="filtro_resultados" class="block text-sm font-medium text-gray-700">Filtrar resultados por palabra clave:</label>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="text" id="filtro_resultados" name="filtro_resultados" value="{{ filtro_resultados or '' }}" placeholder="Ej: phillips, 1/2, bahco" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                            <button type="submit" class="mt-1 inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700">Filtrar</button>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {# --- FIN DEL NUEVO CAMPO --- #}
+                                </form>
+
+                                {% if productos_encontrados is not none %}
+                                    <h3 class="mt-8 text-lg font-medium text-gray-900">Resultados de la Búsqueda</h3>
+                                    <div class="mt-4 space-y-4">
+                                    {% for producto in productos_encontrados %}
+                                    <div class="bg-gray-50 p-4 rounded-lg border shadow-sm">
+                                        <p class="text-sm font-medium text-gray-900"><strong>PROVEEDOR:</strong> {{ producto.proveedor }}</p>
+                                        <p class="text-sm text-gray-600"><strong>CÓDIGO:</strong> {{ producto.codigo }}</p>
+                                        <p class="text-sm text-gray-600"><strong>PRODUCTO:</strong> {{ producto.producto }}</p>
+                                        <p class="text-sm text-gray-600"><strong>IVA DEL PRODUCTO:</strong> {{ producto.iva }}</p>
+                                        
+                                        {% if producto.precios %}
+                                        <div class="mt-2 pt-2 border-t"><p class="text-sm font-medium text-gray-900"><strong>PRECIOS:</strong></p>
+                                            <ul class="text-sm text-gray-600 list-none space-y-1 mt-1">
+                                                {% for nombre, valor in producto.precios.items() %}
+                                                <li class="flex justify-between"><span>{{ nombre }}:</span> <strong>${{ formatear_precio(valor) }}</strong></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if producto.extra_datos %}
+                                        <div class="mt-2 pt-2 border-t"><p class="text-sm font-medium text-gray-900"><strong>DATOS ADICIONALES:</strong></p>
+                                            <ul class="text-sm text-gray-600 list-none space-y-1 mt-1">
+                                                {% for nombre, valor in producto.extra_datos.items() %}
+                                                <li class="flex justify-between"><span>{{ nombre }}:</span> <strong>{{ valor }}</strong></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+
+                                        {# --- BLOQUE PARA PRECIOS CALCULADOS --- #}
+                                        {% if producto.precios_calculados %}
+                                        <div class="mt-2 pt-2 border-t border-dashed border-blue-400 bg-blue-50 p-2 rounded-md">
+                                            <p class="text-sm font-medium text-blue-900"><strong>Precios Calculados:</strong></p>
+                                            <ul class="text-sm text-blue-700 list-none space-y-1 mt-1">
+                                                {% for nombre, valor in producto.precios_calculados.items() %}
+                                                <li class="flex justify-between"><span>{{ nombre }}:</span> <strong class="text-base">${{ formatear_precio(valor) }}</strong></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+                                        {# --- FIN DEL BLOQUE --- #}
+                                    </div>
+                                    {% endfor %}
+                                    <p class="text-center text-xs text-gray-500">* Usa la "Calculadora Manual" en la pestaña "Cálculos" para ingresar el precio que elijas. *</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div id="content-calculos" class="tab-content hidden">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div>
+                                    <h2 class="text-xl font-semibold text-gray-900 mb-4">🧮 Calculadora Automática</h2>
+                                    <form method="post" class="space-y-4 p-4 border rounded-md bg-gray-50">
+                                        <input type="hidden" name="formulario" value="calcular_auto">
+                                        <input type="hidden" class="active_tab_input" name="active_tab" value="calculos">
+                                        <div>
+                                            <label for="proveedor_id" class="block text-sm font-medium text-gray-700">Proveedor</label>
+                                            <select name="proveedor_id" id="proveedor_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                <option value="">-- Selecciona --</option>
+                                                {% for prov_id, prov_nombre_visible in proveedores_lista %}
+                                                    <option value="{{ prov_id }}" {% if prov_id == datos_calculo_auto.get('proveedor_id') %}selected{% endif %}>{{ prov_nombre_visible }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="precio" class="block text-sm font-medium text-gray-700">Precio Base</label>
+                                            <input type="text" name="precio" id="precio" value="{{ datos_calculo_auto.get('precio', '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        </div>
+                                        <div>
+                                            <label for="auto_producto" class="block text-sm font-medium text-gray-700">(Opcional) Producto</label>
+                                            <input type="text" name="auto_producto" id="auto_producto" value="{{ datos_calculo_auto.get('auto_producto', '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        </div>
+                                        <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">Calcular y Guardar</button>
+                                    </form>
+                                    {% if resultado_auto %}
+                                        <div class="mt-4 rounded-md bg-green-50 p-4 text-sm font-medium text-green-800">PRECIO FINAL: ${{ resultado_auto }}</div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-semibold text-gray-900 mb-4">✍️ Calculadora Manual</h2>
+                                    <form method="post" class="p-4 border rounded-md bg-gray-50">
+                                        <input type="hidden" name="formulario" value="calcular_manual">
+                                        <input type="hidden" class="active_tab_input" name="active_tab" value="calculos">
+                                        <div class="grid grid-cols-1 gap-y-4 gap-x-4 sm:grid-cols-2 mb-6">
+                                            <div><label for="manual_precio" class="block text-sm font-medium text-gray-700">Precio Base</label><input type="text" name="manual_precio" id="manual_precio" value="{{ datos_calculo_manual.get('manual_precio', '') }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                            <div><label for="manual_producto" class="block text-sm font-medium text-gray-700">(Opcional) Producto</label><input type="text" name="manual_producto" id="manual_producto" value="{{ datos_calculo_manual.get('manual_producto', '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                            <div><label for="manual_proveedor_label" class="block text-sm font-medium text-gray-700">(Opcional) Proveedor</label><input type="text" name="manual_proveedor_label" id="manual_proveedor_label" value="{{ datos_calculo_manual.get('manual_proveedor_label', '') }}" placeholder="Ej: Proveedor X" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                            <div><label for="manual_observaciones" class="block text-sm font-medium text-gray-700">(Opcional) Observaciones</label><input type="text" name="manual_observaciones" id="manual_observaciones" value="{{ datos_calculo_manual.get('manual_observaciones', '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                        </div>
+                                        <h3 class="text-lg font-medium text-gray-900">Porcentajes a Aplicar</h3>
+                                        <div class="mt-2 grid grid-cols-1 gap-y-4 gap-x-4 sm:grid-cols-3">
+                                            <div><label for="manual_descuento" class="block text-sm font-medium text-gray-700">Descuento (%)</label><input type="text" name="manual_descuento" value="{{ datos_calculo_manual.get('manual_descuento', '0.0') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                            <div><label for="manual_iva" class="block text-sm font-medium text-gray-700">IVA (%)</label><input type="text" name="manual_iva" value="{{ datos_calculo_manual.get('manual_iva', '21.0') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                            <div><label for="manual_ganancia" class="block text-sm font-medium text-gray-700">Ganancia (%)</label><input type="text" name="manual_ganancia" value="{{ datos_calculo_manual.get('manual_ganancia', '60.0') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                            <div><label for="desc_extra_1" class="block text-sm font-medium text-gray-700">Desc. Extra 1 (%)</label><input type="text" name="desc_extra_1" value="{{ datos_calculo_manual.get('desc_extra_1', '0.0') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                            <div><label for="desc_extra_2" class="block text-sm font-medium text-gray-700">Desc. Extra 2 (%)</label><input type="text" name="desc_extra_2" value="{{ datos_calculo_manual.get('desc_extra_2', '0.0') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                            <div><label for="ganancia_extra" class="block text-sm font-medium text-gray-700">Ganancia Extra (%)</label><input type="text" name="ganancia_extra" value="{{ datos_calculo_manual.get('ganancia_extra', '0.0') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                        </div>
+                                        <button type="submit" class="mt-6 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">Calcular y Guardar</button>
+                                    </form>
+                                    {% if resultado_manual %}
+                                        <div class="mt-4 rounded-md bg-green-50 p-4 text-sm font-medium text-green-800">PRECIO FINAL: ${{ resultado_manual }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="content-gestion" class="tab-content hidden">
+                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div>
+                                    <h2 class="text-xl font-semibold text-gray-900 mb-4">🔧 Editar Proveedor</h2>
+                                    <form method="post" class="p-4 border rounded-md bg-gray-50">
+                                        <input type="hidden" name="formulario" value="editar">
+                                        <input type="hidden" class="active_tab_input" name="active_tab" value="gestion">
+                                        <label for="editar_proveedor_id" class="block text-sm font-medium text-gray-900">Selecciona para editar</label>
+                                        <select name="editar_proveedor_id" id="editar_proveedor_id" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                                            <option value="">-- Selecciona --</option>
+                                            {% for prov_id, prov_nombre_visible in proveedores_lista %}
+                                                <option value="{{ prov_id }}" {% if prov_id == proveedor_id_seleccionado %}selected{% endif %}>{{ prov_nombre_visible }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if proveedor_id_seleccionado %}
+                                            <div class="mt-4 border-t pt-4 space-y-4">
+                                                <h3 class="text-lg font-medium text-gray-900">Editando: {{ generar_nombre_visible(datos_seleccionados) }}</h3>
+                                                <div><label class="block text-sm font-medium text-gray-700">Nombre Base</label><input type="text" name="edit_nombre_base" value="{{ datos_seleccionados.nombre_base }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                    <div><label class="block text-sm font-medium text-gray-700">Descuento (%)</label><input type="text" name="descuento" value="{{ (datos_seleccionados.get('descuento', 0) * 100)|round(2) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                                    <div><label class="block text-sm font-medium text-gray-700">IVA (%)</label><input type="text" name="iva" value="{{ (datos_seleccionados.get('iva', 0) * 100)|round(2) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                                    <div><label class="block text-sm font-medium text-gray-700">Ganancia (%)</label><input type="text" name="ganancia" value="{{ (datos_seleccionados.get('ganancia', 0) * 100)|round(2) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                                </div>
+                                                <div class="flex items-center"><input id="edit_es_dinamico" name="edit_es_dinamico" value="true" type="checkbox" {% if datos_seleccionados.es_dinamico %}checked{% endif %} class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="edit_es_dinamico" class="ml-2 block text-sm text-gray-900">Generar nombre dinámico</label></div>
+                                                <button type="submit" name="guardar" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">Guardar Cambios</button>
+                                            </div>
+                                        {% endif %}
+                                    </form>
+                                </div>
+                                <div class="space-y-8">
+                                    <div>
+                                        <h2 class="text-xl font-semibold text-gray-900 mb-4">➕ Agregar Nuevo Proveedor</h2>
+                                        <form method="post" class="p-4 border rounded-md bg-gray-50 space-y-4">
+                                            <input type="hidden" name="formulario" value="agregar">
+                                            <input type="hidden" class="active_tab_input" name="active_tab" value="gestion">
+                                            <div><label class="block text-sm font-medium text-gray-700">Nombre Base</label><input type="text" name="nuevo_nombre_base" required placeholder="Ej: Chiesa" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                <div><label class="block text-sm font-medium text-gray-700">Descuento (%)</label><input type="text" name="nuevo_descuento" value="0.0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                                <div><label class="block text-sm font-medium text-gray-700">IVA (%)</label><input type="text" name="nuevo_iva" value="21.0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                                <div><label class="block text-sm font-medium text-gray-700">Ganancia (%)</label><input type="text" name="nuevo_ganancia" value="60.0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+                                            </div>
+                                            <div class="flex items-center"><input id="nuevo_es_dinamico" name="nuevo_es_dinamico" type="checkbox" value="true" checked class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="nuevo_es_dinamico" class="ml-2 block text-sm text-gray-900">Generar nombre visible dinámico</label></div>
+                                            <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">Agregar Proveedor</button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-semibold text-gray-900 mb-4">❌ Borrar Proveedor</h2>
+                                        <form method="post" class="p-4 border rounded-md bg-gray-50">
+                                            <input type="hidden" name="formulario" value="borrar">
+                                            <input type="hidden" class="active_tab_input" name="active_tab" value="gestion">
+                                            <label for="borrar_proveedor_id" class="block text-sm font-medium text-gray-700">Proveedor a Borrar</label>
+                                            <select name="borrar_proveedor_id" id="borrar_proveedor_id" required class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                                                <option value="">-- Selecciona un proveedor --</option>
+                                                {% for prov_id, prov_nombre_visible in proveedores_lista %}
+                                                    <option value="{{ prov_id }}">{{ prov_nombre_visible }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="mt-4 inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700" onclick="return confirm('¿Estás seguro de que quieres borrar este proveedor? Esta acción no se puede deshacer.')">Borrar Permanentemente</button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-semibold text-gray-900 mb-2">📤 Actualizar Listas de Precios (Excel)</h2>
+                                        <p class="text-xs text-gray-500 mb-3">Los nombres de archivo se renombrarán automáticamente a &lt;Proveedor&gt;-MMYYYY.xlsx (o DDMMYYYY si marcas incluir día). Si ya existe uno con el mismo nombre se sobrescribe.</p>
+                                        <form method="post" enctype="multipart/form-data" class="p-4 border rounded-md bg-gray-50 space-y-4">
+                                            <input type="hidden" name="formulario" value="subir_lista">
+                                            <input type="hidden" class="active_tab_input" name="active_tab" value="gestion">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Archivo(s) Excel</label>
+                                                <input type="file" name="archivos_excel" multiple accept=".xlsx,.xls" class="mt-1 block w-full text-sm text-gray-700" />
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Forzar Nombre de Proveedor (opcional)</label>
+                                                <select name="proveedor_archivo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm">
+                                                    <option value="">(Inferir automáticamente)</option>
+                                                    {% for nombre_prov in lista_nombres_proveedores %}
+                                                        <option value="{{ nombre_prov }}">{{ nombre_prov }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <input type="checkbox" id="incluir_dia" name="incluir_dia" value="true" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                                <label for="incluir_dia" class="text-sm text-gray-700">Incluir día en el nombre del archivo (DDMMYYYY)</label>
+                                            </div>
+                                            <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">Subir / Actualizar</button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-semibold text-gray-900 mb-2">🕒 Últimas Actualizaciones de Listas</h2>
+                                        {% if ultimas_actualizaciones %}
+                                        <div class="overflow-x-auto max-h-64 border rounded-md">
+                                            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th class="px-3 py-2 text-left font-semibold text-gray-700">Proveedor</th>
+                                                        <th class="px-3 py-2 text-left font-semibold text-gray-700">Archivo</th>
+                                                        <th class="px-3 py-2 text-left font-semibold text-gray-700">Modificado</th>
+                                                        <th class="px-3 py-2 text-left font-semibold text-gray-700">Hace</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-100 bg-white">
+                                                    {% for item in ultimas_actualizaciones %}
+                                                    <tr>
+                                                        <td class="px-3 py-1">{{ item.proveedor }}</td>
+                                                        <td class="px-3 py-1" title="{{ item.filename }}">{{ item.filename }}</td>
+                                                        <td class="px-3 py-1">{{ item.fecha }}</td>
+                                                        <td class="px-3 py-1 text-xs text-gray-500">{{ item.hace }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500">Ruta de almacenamiento: {{ listas_path }}</p>
+                                        {% else %}
+                                            <p class="text-sm text-gray-500">Aún no se han subido listas.</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-semibold text-gray-900 mb-2">⬇️ Descargar Listas Vigentes</h2>
+                                        {% if listas_vigentes %}
+                                            <ul class="text-sm list-disc pl-5 space-y-1">
+                                                {% for f in listas_vigentes %}
+                                                <li>
+                                                    <a class="text-indigo-600 hover:underline" href="/download_lista/{{ f.filename }}" download>{{ f.filename }}</a>
+                                                    <span class="text-xs text-gray-500">({{ f.fecha }})</span>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p class="text-sm text-gray-500">No hay listas vigentes.</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-semibold text-gray-900 mb-2">🗄️ Listas Antiguas (OLD)</h2>
+                                        {% if listas_old %}
+                                            <ul class="text-sm list-disc pl-5 space-y-1">
+                                                {% for f in listas_old %}
+                                                <li>
+                                                    <a class="text-orange-600 hover:underline" href="/download_lista/{{ f.filename }}" download>{{ f.filename }}</a>
+                                                    <span class="text-xs text-gray-500">({{ f.fecha }})</span>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p class="text-sm text-gray-500">No hay listas antiguas.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="content-historial" class="tab-content hidden">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-4">🧾 Historial de Cálculos</h2>
+                            <div class="flex justify-between items-center mb-4">
+                                <form method="POST" id="form-historial" class="m-0 p-0">
+                                    <input type="hidden" name="formulario" value="borrar_historial_seleccionado">
+                                    <input type="hidden" class="active_tab_input" name="active_tab" value="historial">
+                                    <button type="submit" class="rounded-md bg-yellow-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-yellow-600" onclick="return confirm('¿Borrar las entradas seleccionadas del historial?')">Borrar Seleccionados</button>
+                                </form>
+                                <form method="POST" class="m-0 p-0">
+                                    <input type="hidden" name="formulario" value="borrar_todo_historial">
+                                    <input type="hidden" class="active_tab_input" name="active_tab" value="historial">
+                                    <button type="submit" class="rounded-md bg-red-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700" onclick="return confirm('¡¡PELIGRO!! ¿Estás seguro de que quieres borrar TODO el historial permanentemente? Esta acción no se puede deshacer.')">Borrar Todo el Historial</button>
+                                </form>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table id="historial" class="min-w-full divide-y divide-gray-300">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">Sel.</th>
+                                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Fecha/Hora</th>
+                                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Tipo</th>
+                                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Proveedor</th>
+                                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Producto</th>
+                                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Precio Base</th>
+                                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Porcentajes Aplicados</th>
+                                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Precio Final</th>
+                                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Obs.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 bg-white">
+                                        {% for item in historial %}
+                                        <tr>
+                                            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900"><input type="checkbox" name="historial_ids_a_borrar" value="{{ item.id_historial }}" form="form-historial" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></td>
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ item.timestamp }}</td>
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ item.tipo_calculo }}</td>
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ item.proveedor_nombre }}</td>
+                                            <td class="px-3 py-4 text-sm text-gray-500" style="min-width: 150px; max-width: 250px; white-space: normal;">{{ item.producto }}</td>
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">${{ formatear_precio(item.precio_base) }}</td>
+                                            
+                                            <!-- CELDA DE PORCENTAJES DETALLADOS -->
+                                            <td class="px-3 py-4 text-sm text-gray-500" style="min-width: 200px;">
+                                                <div class="space-y-1">
+                                                    {% set p = item.porcentajes %}
+                                                    <div class="flex justify-between"><span>Desc:</span> <span>{{ (p.descuento * 100)|round(2) }}%</span></div>
+                                                    {% if p.descuento_extra_1 %}<div class="flex justify-between text-xs pl-2"><span>└ Extra 1:</span> <span>{{ (p.descuento_extra_1 * 100)|round(2) }}%</span></div>{% endif %}
+                                                    {% if p.descuento_extra_2 %}<div class="flex justify-between text-xs pl-2"><span>└ Extra 2:</span> <span>{{ (p.descuento_extra_2 * 100)|round(2) }}%</span></div>{% endif %}
+                                                    <div class="flex justify-between border-t border-gray-200 mt-1 pt-1"><span>IVA:</span> <span>{{ (p.iva * 100)|round(2) }}%</span></div>
+                                                    <div class="flex justify-between"><span>Gan:</span> <span>{{ (p.ganancia * 100)|round(2) }}%</span></div>
+                                                    {% if p.ganancia_extra %}<div class="flex justify-between text-xs pl-2"><span>└ Extra:</span> <span>{{ (p.ganancia_extra * 100)|round(2) }}%</span></div>{% endif %}
+                                                </div>
+                                            </td>
+
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900"><strong>${{ formatear_precio(item.precio_final) }}</strong></td>
+                                            <td class="px-3 py-4 text-sm text-gray-500" style="min-width: 150px; max-width: 250px; white-space: normal;">{{ item.observaciones }}</td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="9" class="whitespace-nowrap px-3 py-4 text-sm text-center text-gray-500">No hay cálculos en el historial.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Ocultar todos los contenidos
+            document.querySelectorAll('.tab-content').forEach(function(content) {
+                content.classList.add('hidden');
+            });
+            // Quitar estilos activos de todas las pestañas
+            document.querySelectorAll('nav a').forEach(function(tab) {
+                tab.classList.remove('border-indigo-500', 'text-indigo-600');
+                tab.classList.add('border-transparent', 'text-gray-500', 'hover:border-gray-300', 'hover:text-gray-700');
+            });
+            // Mostrar el contenido de la pestaña seleccionada
+            document.getElementById('content-' + tabName).classList.remove('hidden');
+            // Aplicar estilo activo a la pestaña seleccionada
+            let activeTabLink = document.getElementById('tab-' + tabName);
+            activeTabLink.classList.add('border-indigo-500', 'text-indigo-600');
+            activeTabLink.classList.remove('border-transparent', 'text-gray-500', 'hover:border-gray-300', 'hover:text-gray-700');
+            
+            // Actualiza todos los campos ocultos con la pestaña activa
+            document.querySelectorAll('.active_tab_input').forEach(function(input) {
+                input.value = tabName;
+            });
+        }
+
+        // Al cargar la página, muestra la pestaña correcta
+        document.addEventListener('DOMContentLoaded', function() {
+            const activeTabOnLoad = "{{ active_tab | default('busqueda') }}";
+            showTab(activeTabOnLoad);
+        });
+    </script>
+</body>
+</html>

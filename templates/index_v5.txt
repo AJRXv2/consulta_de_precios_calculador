@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora de Precios Ferreteria Pauluk</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f2f2f2; text-transform: uppercase; font-weight: bold; }
+        h2 { color: #333; }
+        h3 { color: #555; }
+        form { margin-bottom: 20px; padding: 20px; background-color: #fff; border: 1px solid #ccc; border-radius: 8px; }
+        label { display: block; margin-top: 10px; }
+        input[type="text"], select { width: 100%; padding: 5px; margin-top: 5px; box-sizing: border-box; }
+        input[type="submit"] { margin-top: 15px; padding: 8px 16px; cursor: pointer; }
+        input[type="checkbox"] { width: auto; margin-right: 5px; }
+        label.inline-label { display: inline-block; margin-top: 10px; }
+        
+        input[name="borrar_btn"] { background-color: #dc3545; color: white; border: none; }
+        input[name="borrar_btn"]:hover { background-color: #c82333; }
+        input[name="borrar_historial_btn"] { background-color: #ffc107; color: black; border: none; }
+        input[name="borrar_todo_btn"] { background-color: #dc3545; color: white; border: none; margin-left: 10px;}
+
+        .resultado { font-size: 1.2em; color: green; margin-top: 10px; background: #eeffee; border: 1px solid green; padding: 8px; border-radius: 5px; }
+        .mensaje { margin-top: 12px; padding: 8px; background: #fffbdd; border: 1px solid #f0e68c; border-radius: 6px; }
+        hr { margin: 40px 0; }
+        
+        .manual-calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .porcentajes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        
+        .historial-controles { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px; background: #fdfdfd; border: 1px solid #ccc; border-bottom: none; border-radius: 8px 8px 0 0; }
+        .historial-controles form { margin-bottom: 0; padding: 0; border: none; }
+
+        #historial { margin-top: 0; border-collapse: collapse; width: 100%; }
+        #historial th, #historial td { border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #fff; }
+        #historial th { background-color: #e9e9e9; color: #333; }
+        #historial tr:nth-child(even) td { background-color: #f9f9f9; }
+        #historial td { font-size: 0.85em; }
+
+        .consulta-info { background-color: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 15px;}
+        .consulta-info p { margin: 5px 0; text-transform: capitalize;}
+        .data-list { list-style-type: none; padding-left: 0; }
+        .data-list li { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f0f0f0; }
+    </style>
+</head>
+<body>
+
+    {% if mensaje %}
+        <div class="mensaje">{{ mensaje }}</div>
+    {% endif %}
+
+    <h2>🔍 BÚSQUEDA DE PRODUCTOS</h2>
+    <form method="post">
+        <input type="hidden" name="formulario" value="consulta_producto">
+        <label>BUSCAR POR CÓDIGO O NOMBRE:</label>
+        <input type="text" name="termino_busqueda" placeholder="Ej: 101 o Sillon plegable" style="width: 300px;" value="{{ request.form.get('termino_busqueda', '') }}">
+        <input type="submit" value="BUSCAR PRODUCTO">
+    </form>
+    
+    {% if productos_encontrados %}
+        <h3>Resultados de la Búsqueda:</h3>
+        {% for producto in productos_encontrados %}
+        <div class="consulta-info">
+            <p><strong>PROVEEDOR:</strong> {{ producto.proveedor }}</p>
+            <p><strong>CÓDIGO:</strong> {{ producto.codigo }}</p>
+            <p><strong>PRODUCTO:</strong> {{ producto.producto }}</p>
+            <p><strong>IVA DEL PRODUCTO:</strong> {{ producto.iva }}</p>
+            
+            {% if producto.precios %}
+            <hr style="margin: 10px 0;">
+            <p><strong>PRECIOS:</strong></p>
+            <ul class="data-list">
+                {% for nombre, valor in producto.precios.items() %}
+                <li><span>{{ nombre }}:</span> <strong>${{ formatear_precio(valor) }}</strong></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if producto.extra_datos %}
+            <hr style="margin: 10px 0;">
+            <p><strong>DATOS ADICIONALES:</strong></p>
+            <ul class="data-list">
+                {% for nombre, valor in producto.extra_datos.items() %}
+                <li><span>{{ nombre }}:</span> <strong>{{ valor }}</strong></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <p style="text-align: center; font-size: 0.9em;">* Usa la "Calculadora Manual" de abajo para ingresar el precio que elijas y calcular el precio final. *</p>
+    {% endif %}
+
+    <hr>
+
+    <h2>🧮 CALCULADORA AUTOMÁTICA</h2>
+    <form method="post" class="manual-calc-grid">
+        <input type="hidden" name="formulario" value="calcular_auto">
+        <div>
+            <label>PROVEEDOR:</label>
+            <select name="proveedor_id" required>
+                <option value="">-- Selecciona --</option>
+                {% for prov_id, prov_nombre_visible in proveedores_lista %}
+                    <option value="{{ prov_id }}" {% if prov_id == request.form.get('proveedor_id') %}selected{% endif %}>
+                        {{ prov_nombre_visible }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>PRECIO BASE:</label>
+            <input type="text" name="precio" value="{{ request.form.get('precio', '') }}">
+        </div>
+        <input type="submit" value="CALCULAR Y GUARDAR EN HISTORIAL" style="grid-column: 1 / -1;">
+    </form>
+
+    {% if resultado_auto %}
+        <div class="resultado">✅ PRECIO FINAL AUTOMÁTICO: ${{ resultado_auto }}</div>
+    {% endif %}
+
+    <hr>
+
+    <h2>✍️ CALCULADORA MANUAL</h2>
+    <form method="post">
+        <input type="hidden" name="formulario" value="calcular_manual">
+        <div class="manual-calc-grid" style="margin-bottom: 20px;">
+            <div>
+                <label>PRECIO BASE:</label>
+                <input type="text" name="manual_precio" required>
+            </div>
+            <div>
+                 <label>(Opcional) Nombre del Producto:</label>
+                <input type="text" name="manual_producto">
+            </div>
+            <div>
+                <label>(Opcional) Proveedor (Texto Manual):</label>
+                <input type="text" name="manual_proveedor_label" placeholder="Ej: Proveedor X">
+            </div>
+            <div>
+                <label>(Opcional) Observaciones:</label>
+                <input type="text" name="manual_observaciones">
+            </div>
+        </div>
+        
+        <h3>Porcentajes a Aplicar:</h3>
+        <div class="porcentajes-grid">
+            <div><label>Descuento (%):</label><input type="text" name="manual_descuento" value="0.0"></div>
+            <div><label>IVA (%):</label><input type="text" name="manual_iva" value="21.0"></div>
+            <div><label>Ganancia (%):</label><input type="text" name="manual_ganancia" value="60.0"></div>
+            <div><label>(Opcional) Descuento Extra 1 (%):</label><input type="text" name="desc_extra_1" value="0.0"></div>
+            <div><label>(Opcional) Descuento Extra 2 (%):</label><input type="text" name="desc_extra_2" value="0.0"></div>
+            <div><label>(Opcional) Ganancia Extra (%):</label><input type="text" name="ganancia_extra" value="0.0"></div>
+        </div>
+        <input type="submit" value="CALCULAR MANUALMENTE Y GUARDAR">
+    </form>
+    
+    {% if resultado_manual %}
+        <div class="resultado">✅ PRECIO FINAL MANUAL: ${{ resultado_manual }}</div>
+    {% endif %}
+
+    <hr>
+
+    <h2>🔧 GESTIÓN DE PROVEEDORES</h2>
+    <form method="post">
+        <input type="hidden" name="formulario" value="editar">
+        <label>PROVEEDOR:</label>
+        <select name="editar_proveedor_id" onchange="this.form.submit()" style="width: 300px;">
+            <option value="">-- Selecciona para editar --</option>
+            {% for prov_id, prov_nombre_visible in proveedores_lista %}
+                <option value="{{ prov_id }}" {% if prov_id == proveedor_id_seleccionado %}selected{% endif %}>
+                    {{ prov_nombre_visible }}
+                </option>
+            {% endfor %}
+        </select>
+        {% if proveedor_id_seleccionado %}
+            <div class="edit-fields">
+                <h3>EDITANDO: {{ generar_nombre_visible(datos_seleccionados) }}</h3>
+                <div class="porcentajes-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+                    <div><label>Nombre Base:</label><input type="text" name="edit_nombre_base" value="{{ datos_seleccionados.nombre_base }}"></div>
+                    <div><label>Descuento (%):</label><input type="text" name="descuento" value="{{ (datos_seleccionados.get('descuento', 0) * 100)|round(2) }}"></div>
+                    <div><label>IVA (%):</label><input type="text" name="iva" value="{{ (datos_seleccionados.get('iva', 0) * 100)|round(2) }}"></div>
+                    <div><label>Ganancia (%):</label><input type="text" name="ganancia" value="{{ (datos_seleccionados.get('ganancia', 0) * 100)|round(2) }}"></div>
+                </div>
+                <input type="checkbox" id="edit_es_dinamico" name="edit_es_dinamico" value="true" {% if datos_seleccionados.es_dinamico %}checked{% endif %}>
+                <label for="edit_es_dinamico" class="inline-label">Generar nombre dinámicamente</label>
+            </div>
+            <input type="submit" name="guardar" value="GUARDAR CAMBIOS">
+        {% endif %}
+    </form>
+
+    <hr>
+
+    <h2>➕ AGREGAR NUEVO PROVEEDOR</h2>
+    <form method="post">
+        <input type="hidden" name="formulario" value="agregar">
+        <div class="porcentajes-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+            <div><label>Nombre Base:</label><input type="text" name="nuevo_nombre_base" required placeholder="Ej: Chiesa"></div>
+            <div><label>Descuento (%):</label><input type="text" name="nuevo_descuento" value="0.0"></div>
+            <div><label>IVA (%):</label><input type="text" name="nuevo_iva" value="21.0"></div>
+            <div><label>Ganancia (%):</label><input type="text" name="nuevo_ganancia" value="60.0"></div>
+        </div>
+        <input type="checkbox" id="nuevo_es_dinamico" name="nuevo_es_dinamico" value="true" checked>
+        <label for="nuevo_es_dinamico" class="inline-label">Generar nombre visible dinámico</label>
+        <br>
+        <input type="submit" value="AGREGAR PROVEEDOR">
+    </form>
+
+    <hr>
+    
+    <h2>❌ BORRAR PROVEEDOR</h2>
+    <form method="post">
+        <input type="hidden" name="formulario" value="borrar">
+        <label>PROVEEDOR A BORRAR:</label>
+        <select name="borrar_proveedor_id" required style="width: 300px;">
+            <option value="">-- Selecciona un proveedor --</option>
+            {% for prov_id, prov_nombre_visible in proveedores_lista %}
+                <option value="{{ prov_id }}">{{ prov_nombre_visible }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" name="borrar_btn" value="BORRAR PERMANENTEMENTE" onclick="return confirm('¿Estás seguro de que quieres borrar este proveedor? Esta acción no se puede deshacer.')">
+    </form>
+
+    <hr>
+
+    <h2>🧾 HISTORIAL DE CÁLCULOS</h2>
+    <div class="historial-controles">
+        <form method="POST" id="form-historial">
+            <input type="hidden" name="formulario" value="borrar_historial_seleccionado">
+            <input type="submit" name="borrar_historial_btn" value="BORRAR SELECCIONADOS" onclick="return confirm('¿Borrar las entradas seleccionadas del historial?')">
+        </form>
+        <form method="POST">
+             <input type="hidden" name="formulario" value="borrar_todo_historial">
+             <input type="submit" name="borrar_todo_btn" value="BORRAR TODO EL HISTORIAL" onclick="return confirm('¡¡PELIGRO!! ¿Estás seguro de que quieres borrar TODO el historial permanentemente? Esta acción no se puede deshacer.')">
+        </form>
+    </div>
+    
+    <table id="historial">
+        <thead>
+            <tr>
+                <th>Sel.</th> <th>Fecha/Hora</th> <th>Tipo</th> <th>Proveedor</th>
+                <th>Producto</th> <th>Precio Base</th> <th>Desc.</th> <th>IVA</th>
+                <th>Gan.</th> <th>Precio Final</th> <th>Obs.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in historial %}
+            <tr>
+                <td><input type="checkbox" name="historial_ids_a_borrar" value="{{ item.id_historial }}" form="form-historial"></td>
+                <td>{{ item.timestamp }}</td>
+                <td>{{ item.tipo_calculo }}</td>
+                <td>{{ item.proveedor_nombre }}</td>
+                <td>{{ item.producto }}</td>
+                <td>${{ formatear_precio(item.precio_base) }}</td>
+                <td>{{ (item.porcentajes.descuento * 100)|round(2) }}%</td>
+                <td>{{ (item.porcentajes.iva * 100)|round(2) }}%</td>
+                <td>{{ (item.porcentajes.ganancia * 100)|round(2) }}%</td>
+                <td><strong>${{ formatear_precio(item.precio_final) }}</strong></td>
+                <td>{{ item.observaciones }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="11" style="text-align: center;">No hay cálculos en el historial.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
