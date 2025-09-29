@@ -33,7 +33,7 @@ python app_v5.py
 2. En Railway: New Project -> Deploy from GitHub.
 3. Agrega variable `PORT` = 8080 (Railway suele inyectar `PORT`).
 4. Crea un servicio PostgreSQL y copia su `DATABASE_URL` a variables del servicio web.
-5. Ajusta `start` command: `python app_v5.py`.
+5. Ajusta `start` command: `python app_v5.py` (o usa el `Procfile` añadido con `web: python app_v5.py`).
 6. (Opcional recomendado) Modifica el código para usar el puerto dinámico `PORT` que Railway inyecta (puedo agregarlo si lo pides).
 
 ## Migración de Datos

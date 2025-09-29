@@ -792,7 +792,14 @@ def abrir_navegador():
     webbrowser.open_new('http://127.0.0.1:5000/')
 
 if __name__ == "__main__":
-    Timer(1, abrir_navegador).start()
-    print("Iniciando servidor de producción en http://127.0.0.1:5000/")
+    # Puerto dinámico para plataformas como Railway / Render / Heroku
+    port = int(os.getenv("PORT", 5000))
+    # Abrir navegador solo si es entorno local (heurística: no hay PORT externo)
+    if port == 5000:
+        try:
+            Timer(1, abrir_navegador).start()
+        except Exception:
+            pass
+    print(f"Iniciando servidor en http://0.0.0.0:{port}/ (Waitress)")
     print(f"Las listas de precios en formato Excel deben guardarse en: {LISTAS_PATH}")
-    serve(app, host='0.0.0.0', port=5000)
+    serve(app, host='0.0.0.0', port=port)
