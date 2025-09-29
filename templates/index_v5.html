@@ -338,7 +338,16 @@
                                         {% endif %}
                                     </div>
                                     <div>
-                                        <h2 class="text-xl font-semibold text-gray-900 mb-2">🗄️ Listas Antiguas (OLD)</h2>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h2 class="text-xl font-semibold text-gray-900">🗄️ Listas Antiguas (OLD)</h2>
+                                            {% if listas_old %}
+                                            <form method="POST" class="m-0 p-0" onsubmit="return confirm('¿Borrar TODAS las listas OLD?');">
+                                                <input type="hidden" name="formulario" value="borrar_listas_old">
+                                                <input type="hidden" class="active_tab_input" name="active_tab" value="gestion">
+                                                <button type="submit" class="rounded-md bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-700">Borrar OLD</button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
                                         {% if listas_old %}
                                             <ul class="text-sm list-disc pl-5 space-y-1">
                                                 {% for f in listas_old %}

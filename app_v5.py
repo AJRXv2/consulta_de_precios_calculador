@@ -827,6 +827,24 @@ def index():
             except Exception as e:
                 mensaje = f"❌ ERROR BORRANDO TODO EL HISTORIAL: {e}"
 
+        elif formulario == "borrar_listas_old":
+            # Eliminar todos los archivos con OLD en el nombre (sin tocar vigentes)
+            try:
+                eliminados = 0
+                for fname in os.listdir(LISTAS_PATH):
+                    if not fname.lower().endswith(('.xlsx','.xls')):
+                        continue
+                    if 'old' in fname.lower():
+                        try:
+                            os.remove(os.path.join(LISTAS_PATH, fname))
+                            eliminados += 1
+                        except Exception:
+                            pass
+                mensaje = f"✅ {eliminados} LISTA(S) OLD ELIMINADA(S)." if eliminados else "ℹ️ NO HABÍA LISTAS OLD PARA BORRAR."
+                active_tab = "gestion"
+            except Exception as e:
+                mensaje = f"❌ ERROR ELIMINANDO LISTAS OLD: {e}"
+
         elif formulario == "subir_lista":
             # Manejo de carga de archivos Excel
             active_tab = "gestion"  # Permanecer en gestión tras subir
