@@ -132,6 +132,62 @@ def ensure_tables():
 
 ensure_tables()
 
+# --- MIGRACIÓN OPCIONAL HISTORIAL JSON -> PG (solo si tabla vacía) ---
+def maybe_migrate_historial_json_to_pg():
+    if not DATABASE_URL or not psycopg:
+        return
+    try:
+        if not os.path.exists(HISTORIAL_FILE):
+            return
+        with get_pg_conn() as conn, conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) AS c FROM historial")
+            row = cur.fetchone()
+            count = (row or {}).get('c', 0)
+            if count != 0:
+                return  # ya hay datos
+            # leer json
+            try:
+                with open(HISTORIAL_FILE, 'r', encoding='utf-8') as f:
+                    datos_json = json.load(f)
+            except Exception:
+                return
+            if not isinstance(datos_json, list) or not datos_json:
+                return
+            inserted = 0
+            for item in datos_json:
+                try:
+                    porcentajes_json = json.dumps(item.get('porcentajes', {}), ensure_ascii=False)
+                    cur.execute(
+                        """
+                        INSERT INTO historial (id_historial, timestamp, tipo_calculo, proveedor_nombre, producto,
+                                               precio_base, porcentajes, precio_final, observaciones)
+                        VALUES (%(id_historial)s, %(timestamp)s, %(tipo_calculo)s, %(proveedor_nombre)s, %(producto)s,
+                                %(precio_base)s, %(porcentajes)s::jsonb, %(precio_final)s, %(observaciones)s)
+                        ON CONFLICT (id_historial) DO NOTHING
+                        """,
+                        {
+                            'id_historial': item.get('id_historial', str(uuid.uuid4())),
+                            'timestamp': item.get('timestamp', ''),
+                            'tipo_calculo': item.get('tipo_calculo'),
+                            'proveedor_nombre': item.get('proveedor_nombre'),
+                            'producto': item.get('producto'),
+                            'precio_base': item.get('precio_base'),
+                            'porcentajes': porcentajes_json,
+                            'precio_final': item.get('precio_final'),
+                            'observaciones': item.get('observaciones')
+                        }
+                    )
+                    inserted += 1
+                except Exception as e:
+                    log_debug('maybe_migrate_historial_json_to_pg: falla item', e)
+            conn.commit()
+            if inserted:
+                log_debug(f'maybe_migrate_historial_json_to_pg: migradas {inserted} filas a PG.')
+    except Exception as e:
+        log_debug('maybe_migrate_historial_json_to_pg: error general', e)
+
+maybe_migrate_historial_json_to_pg()
+
 # --- AUTENTICACIÓN BÁSICA ---
 def load_credentials():
     """Carga las credenciales desde PostgreSQL si está disponible; si no, desde archivo.
@@ -417,6 +473,14 @@ def load_historial():
             with get_pg_conn() as conn, conn.cursor() as cur:
                 cur.execute("SELECT * FROM historial ORDER BY timestamp ASC")
                 rows = cur.fetchall()
+                # Aseguramos que porcentajes sea dict si viene como texto
+                for r in rows:
+                    val = r.get('porcentajes')
+                    if isinstance(val, str):
+                        try:
+                            r['porcentajes'] = json.loads(val)
+                        except Exception:
+                            pass
                 return rows
         except Exception as e:
             log_debug('load_historial: fallo PG', e)
@@ -436,12 +500,14 @@ def atomic_save_historial_list(historial_list):
                 # estrategia simple: truncar y reinsertar
                 cur.execute("DELETE FROM historial")
                 for item in historial_list:
+                    data_insert = dict(item)
+                    data_insert['porcentajes'] = json.dumps(item.get('porcentajes', {}), ensure_ascii=False)
                     cur.execute("""
                         INSERT INTO historial (id_historial, timestamp, tipo_calculo, proveedor_nombre, producto,
                                                precio_base, porcentajes, precio_final, observaciones)
                         VALUES (%(id_historial)s, %(timestamp)s, %(tipo_calculo)s, %(proveedor_nombre)s, %(producto)s,
-                                %(precio_base)s, %(porcentajes)s, %(precio_final)s, %(observaciones)s)
-                    """, item)
+                                %(precio_base)s, %(porcentajes)s::jsonb, %(precio_final)s, %(observaciones)s)
+                    """, data_insert)
                 conn.commit()
                 return
         except Exception as e:
@@ -462,13 +528,16 @@ def add_entry_to_historial(nueva_entrada):
     if DATABASE_URL:
         try:
             with get_pg_conn() as conn, conn.cursor() as cur:
+                data_insert = dict(nueva_entrada)
+                data_insert['porcentajes'] = json.dumps(nueva_entrada.get('porcentajes', {}), ensure_ascii=False)
                 cur.execute("""
                     INSERT INTO historial (id_historial, timestamp, tipo_calculo, proveedor_nombre, producto,
                                            precio_base, porcentajes, precio_final, observaciones)
                     VALUES (%(id_historial)s, %(timestamp)s, %(tipo_calculo)s, %(proveedor_nombre)s, %(producto)s,
-                            %(precio_base)s, %(porcentajes)s, %(precio_final)s, %(observaciones)s)
-                """, nueva_entrada)
+                            %(precio_base)s, %(porcentajes)s::jsonb, %(precio_final)s, %(observaciones)s)
+                """, data_insert)
                 conn.commit()
+                log_debug('add_entry_to_historial: insert OK', data_insert.get('id_historial'))
                 return
         except Exception as e:
             log_debug('add_entry_to_historial: fallo PG', e)
@@ -1026,10 +1095,16 @@ def health():
         prov_count = len(proveedores)
     except Exception:
         pass
+    histo_len = None
+    try:
+        histo_len = len(load_historial())
+    except Exception:
+        histo_len = 'err'
     return {
         'status': 'ok',
         'storage': modo_storage,
         'proveedores': prov_count,
+        'historial_count': histo_len,
         'debug': DEBUG_LOG
     }, 200
 
