@@ -351,9 +351,17 @@
                                         {% if listas_old %}
                                             <ul class="text-sm list-disc pl-5 space-y-1">
                                                 {% for f in listas_old %}
-                                                <li>
-                                                    <a class="text-orange-600 hover:underline" href="/download_lista/{{ f.filename }}" download>{{ f.filename }}</a>
-                                                    <span class="text-xs text-gray-500">({{ f.fecha }})</span>
+                                                <li class="flex items-center gap-2">
+                                                    <div class="flex-1 min-w-0">
+                                                        <a class="text-orange-600 hover:underline break-all" href="/download_lista/{{ f.filename }}" download>{{ f.filename }}</a>
+                                                        <span class="text-xs text-gray-500">({{ f.fecha }})</span>
+                                                    </div>
+                                                    <form method="POST" class="m-0 p-0" onsubmit="return confirm('¿Eliminar esta lista OLD?');">
+                                                        <input type="hidden" name="formulario" value="borrar_lista_old_individual">
+                                                        <input type="hidden" name="filename" value="{{ f.filename }}">
+                                                        <input type="hidden" class="active_tab_input" name="active_tab" value="gestion">
+                                                        <button type="submit" title="Eliminar" class="rounded bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 text-xs font-semibold">✕</button>
+                                                    </form>
                                                 </li>
                                                 {% endfor %}
                                             </ul>

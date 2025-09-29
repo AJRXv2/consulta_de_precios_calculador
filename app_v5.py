@@ -845,6 +845,18 @@ def index():
             except Exception as e:
                 mensaje = f"❌ ERROR ELIMINANDO LISTAS OLD: {e}"
 
+        elif formulario == "borrar_lista_old_individual":
+            fname = request.form.get('filename','')
+            if fname and 'old' in fname.lower() and fname.lower().endswith(('.xlsx','.xls')):
+                try:
+                    os.remove(os.path.join(LISTAS_PATH, fname))
+                    mensaje = f"✅ LISTA OLD '{fname}' ELIMINADA."
+                except Exception as e:
+                    mensaje = f"❌ ERROR ELIMINANDO '{fname}': {e}"
+            else:
+                mensaje = "⚠️ ARCHIVO NO VÁLIDO PARA ELIMINAR."
+            active_tab = "gestion"
+
         elif formulario == "subir_lista":
             # Manejo de carga de archivos Excel
             active_tab = "gestion"  # Permanecer en gestión tras subir
