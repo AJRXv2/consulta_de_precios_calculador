@@ -39,6 +39,17 @@ python app_v5.py
 ## Migración de Datos
 Usa el script `migrar_json_a_pg.py` para cargar los datos actuales de `datos_v2.json` y `historial.json`.
 
+### Nota sobre error construyendo pandas en Python 3.13
+Railway actualmente instala Python 3.13 por defecto en algunos planes. La versión `pandas==2.2.2` puede intentar compilar desde fuente bajo 3.13, tardando mucho o fallando con errores de Meson/Ninja ("standard attributes in middle of decl-specifiers"). Para evitarlo hay dos estrategias:
+
+1. Fijar la versión de Python a 3.12 (hay ruedas pre-compiladas) añadiendo un archivo `.tool-versions` o `runtime.txt` con `python 3.12.6` / `python-3.12.6`.
+2. Asegurarse de instalar primero una versión concreta de `numpy` con ruedas (por ejemplo `numpy==1.26.4`) antes de `pandas` en `requirements.txt`.
+
+Este repositorio ya incluye ambos ajustes:
+* `runtime.txt` y `.tool-versions` apuntando a Python 3.12.6.
+* `requirements.txt` ahora fija `numpy==1.26.4` antes de `pandas`.
+
+Si ya hiciste un deploy fallido, vuelve a desplegar tras estos cambios.
 ### Pasos:
 ```bash
 pip install -r requirements.txt

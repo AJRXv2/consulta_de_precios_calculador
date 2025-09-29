@@ -1,0 +1,598 @@
+2025-09-29T00:37:30.923168215Z [inf]  
+2025-09-29T00:37:32.757519581Z [inf]  [35m[Region: us-east4][0m
+2025-09-29T00:37:32.785269203Z [inf]  
+2025-09-29T00:37:32.785300448Z [inf]  [38;2;125;86;243m╭────────────────╮[0m
+2025-09-29T00:37:32.785304607Z [inf]  [38;2;125;86;243m│[0m Railpack 0.8.0 [38;2;125;86;243m│[0m
+2025-09-29T00:37:32.785308075Z [inf]  [38;2;125;86;243m╰────────────────╯[0m
+2025-09-29T00:37:32.785312806Z [inf]  
+2025-09-29T00:37:32.785316491Z [inf]  [97m↳ Detected Python[0m
+2025-09-29T00:37:32.785319892Z [inf]  [97m↳ Using pip[0m
+2025-09-29T00:37:32.785323444Z [inf]  [97m↳ Found web command in Procfile[0m
+2025-09-29T00:37:32.785326494Z [inf]  
+2025-09-29T00:37:32.785329351Z [inf]  [1mPackages[0m
+2025-09-29T00:37:32.785332747Z [inf]  [38;5;238m──────────[0m
+2025-09-29T00:37:32.785335871Z [inf]  [95mpython[0m  [38;5;238m│[0m  [96m3.13.7[0m  [38;5;238m│[0m  railpack default (3.13)
+2025-09-29T00:37:32.785338956Z [inf]  
+2025-09-29T00:37:32.785342159Z [inf]  [1mSteps[0m
+2025-09-29T00:37:32.785345129Z [inf]  [38;5;238m──────────[0m
+2025-09-29T00:37:32.785347896Z [inf]  [95m▸ install[0m
+2025-09-29T00:37:32.785350664Z [inf]  [38;5;245m$[0m [1mpython -m venv /app/.venv[0m
+2025-09-29T00:37:32.785353540Z [inf]  [38;5;245m$[0m [1mpip install -r requirements.txt[0m
+2025-09-29T00:37:32.785356523Z [inf]  
+2025-09-29T00:37:32.785359333Z [inf]  [1mDeploy[0m
+2025-09-29T00:37:32.785362422Z [inf]  [38;5;238m──────────[0m
+2025-09-29T00:37:32.785365387Z [inf]  [38;5;245m$[0m [1mpython app_v5.py[0m
+2025-09-29T00:37:32.785368092Z [inf]  
+2025-09-29T00:37:32.785370914Z [inf]  
+2025-09-29T00:37:32.786188075Z [inf]  Successfully prepared Railpack plan for build
+2025-09-29T00:37:32.786214629Z [inf]  
+2025-09-29T00:37:32.786218900Z [inf]  
+2025-09-29T00:37:32.786493193Z [inf]  context: ljmd-LbNS
+2025-09-29T00:37:32.917392070Z [inf]  [internal] load build definition from railpack-plan.json
+2025-09-29T00:37:32.917440637Z [inf]  [internal] load build definition from railpack-plan.json
+2025-09-29T00:37:32.917452525Z [inf]  [internal] load build definition from railpack-plan.json
+2025-09-29T00:37:32.931275883Z [inf]  [internal] load build definition from railpack-plan.json
+2025-09-29T00:37:32.932753673Z [inf]  resolve image config for docker-image://ghcr.io/railwayapp/railpack-frontend:v0.8.0
+2025-09-29T00:37:33.015096798Z [inf]  resolve image config for docker-image://ghcr.io/railwayapp/railpack-frontend:v0.8.0
+2025-09-29T00:37:33.015975864Z [inf]  docker-image://ghcr.io/railwayapp/railpack-frontend:v0.8.0@sha256:bb879eabd2b818422cd8d5c042931ecd6923966c450e95399a200036281ae709
+2025-09-29T00:37:33.016024547Z [inf]  docker-image://ghcr.io/railwayapp/railpack-frontend:v0.8.0@sha256:bb879eabd2b818422cd8d5c042931ecd6923966c450e95399a200036281ae709
+2025-09-29T00:37:33.024518519Z [inf]  docker-image://ghcr.io/railwayapp/railpack-frontend:v0.8.0@sha256:bb879eabd2b818422cd8d5c042931ecd6923966c450e95399a200036281ae709
+2025-09-29T00:37:33.024812861Z [inf]  docker-image://ghcr.io/railwayapp/railpack-frontend:v0.8.0@sha256:bb879eabd2b818422cd8d5c042931ecd6923966c450e95399a200036281ae709
+2025-09-29T00:37:33.155836346Z [inf]  load build definition from railpack-plan.json
+2025-09-29T00:37:33.155888682Z [inf]  load build definition from railpack-plan.json
+2025-09-29T00:37:33.156223544Z [inf]  load build definition from railpack-plan.json
+2025-09-29T00:37:33.166053047Z [inf]  load build definition from railpack-plan.json
+2025-09-29T00:37:33.603552283Z [inf]  copy /root/.local/state/mise
+2025-09-29T00:37:33.603588223Z [inf]  copy /etc/mise/config.toml
+2025-09-29T00:37:33.603595910Z [inf]  copy /usr/local/bin/mise
+2025-09-29T00:37:33.603602580Z [inf]  copy /mise/installs
+2025-09-29T00:37:33.603610660Z [inf]  copy /mise/shims
+2025-09-29T00:37:33.603623328Z [inf]  install mise packages: python
+2025-09-29T00:37:33.603629232Z [inf]  create mise config
+2025-09-29T00:37:33.603635905Z [inf]  mkdir /etc/mise
+2025-09-29T00:37:33.603644531Z [inf]  install apt packages: libpq-dev
+2025-09-29T00:37:33.603651576Z [inf]  docker-image://ghcr.io/railwayapp/railpack-builder:latest
+2025-09-29T00:37:33.603657362Z [inf]  install apt packages: libpq5
+2025-09-29T00:37:33.603662234Z [inf]  docker-image://ghcr.io/railwayapp/railpack-runtime:latest
+2025-09-29T00:37:33.603690351Z [inf]  [railpack] merge $packages:apt:runtime, $packages:mise, $build, $build
+2025-09-29T00:37:33.603697318Z [inf]  copy /app
+2025-09-29T00:37:33.603702772Z [inf]  copy /app/.venv
+2025-09-29T00:37:33.603708376Z [inf]  copy / /app
+2025-09-29T00:37:33.603713418Z [inf]  pip install -r requirements.txt
+2025-09-29T00:37:33.603718904Z [inf]  copy requirements.txt
+2025-09-29T00:37:33.603726063Z [inf]  loading .
+2025-09-29T00:37:33.603731498Z [inf]  python -m venv /app/.venv
+2025-09-29T00:37:33.603743521Z [inf]  docker-image://ghcr.io/railwayapp/railpack-runtime:latest
+2025-09-29T00:37:33.603755576Z [inf]  loading .
+2025-09-29T00:37:33.603764369Z [inf]  loading .
+2025-09-29T00:37:33.609400060Z [inf]  docker-image://ghcr.io/railwayapp/railpack-builder:latest
+2025-09-29T00:37:33.673672906Z [inf]  docker-image://ghcr.io/railwayapp/railpack-builder:latest
+2025-09-29T00:37:33.673934279Z [inf]  docker-image://ghcr.io/railwayapp/railpack-builder:latest
+2025-09-29T00:37:33.673951518Z [inf]  loading .
+2025-09-29T00:37:33.673964708Z [inf]  install apt packages: libpq-dev
+2025-09-29T00:37:33.728748876Z [inf]  loading .
+2025-09-29T00:37:33.733082208Z [inf]  docker-image://ghcr.io/railwayapp/railpack-runtime:latest
+2025-09-29T00:37:33.733292237Z [inf]  docker-image://ghcr.io/railwayapp/railpack-runtime:latest
+2025-09-29T00:37:33.733432461Z [inf]  install apt packages: libpq5
+2025-09-29T00:37:33.8452855Z [inf]  Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+
+2025-09-29T00:37:33.854191481Z [inf]  Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+
+2025-09-29T00:37:33.854204234Z [inf]  Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [48.0 kB]
+
+2025-09-29T00:37:33.912803638Z [inf]  Get:4 http://deb.debian.org/debian bookworm/main amd64 Packages [8791 kB]
+
+2025-09-29T00:37:33.973309594Z [inf]  Get:5 http://deb.debian.org/debian bookworm-updates/main amd64 Packages [6924 B]
+
+2025-09-29T00:37:34.000277096Z [inf]  Get:6 http://deb.debian.org/debian-security bookworm-security/main amd64 Packages [280 kB]
+
+2025-09-29T00:37:34.908598851Z [inf]  Fetched 9333 kB in 1s (8672 kB/s)
+Reading package lists...
+2025-09-29T00:37:35.306686765Z [inf]  
+
+2025-09-29T00:37:35.32120151Z [inf]  Reading package lists...
+2025-09-29T00:37:35.717195637Z [inf]  
+
+2025-09-29T00:37:35.72860873Z [inf]  Building dependency tree...
+2025-09-29T00:37:35.813618347Z [inf]  
+Reading state information...
+2025-09-29T00:37:35.814372056Z [inf]  
+
+2025-09-29T00:37:35.923271923Z [inf]  The following additional packages will be installed:
+
+2025-09-29T00:37:35.923685868Z [inf]    libpq5
+
+2025-09-29T00:37:35.924462103Z [inf]  Suggested packages:
+  postgresql-doc-15
+
+2025-09-29T00:37:35.950841664Z [inf]  The following packages will be upgraded:
+
+2025-09-29T00:37:35.951110263Z [inf]    libpq-dev libpq5
+
+2025-09-29T00:37:35.970276022Z [inf]  2 upgraded, 0 newly installed, 0 to remove and 112 not upgraded.
+Need to get 342 kB of archives.
+After this operation, 5120 B of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bookworm/main amd64 libpq-dev amd64 15.14-0+deb12u1 [148 kB]
+
+2025-09-29T00:37:35.979081245Z [inf]  Get:2 http://deb.debian.org/debian bookworm/main amd64 libpq5 amd64 15.14-0+deb12u1 [194 kB]
+
+2025-09-29T00:37:36.139180405Z [inf]  debconf: delaying package configuration, since apt-utils is not installed
+
+2025-09-29T00:37:36.171739502Z [inf]  Fetched 342 kB in 0s (12.6 MB/s)
+
+2025-09-29T00:37:36.187353556Z [inf]  (Reading database ... 
+2025-09-29T00:37:36.190149345Z [inf]  (Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+2025-09-29T00:37:36.200804131Z [inf]  (Reading database ... 70%
+2025-09-29T00:37:36.210679418Z [inf]  (Reading database ... 75%
+2025-09-29T00:37:36.224053403Z [inf]  (Reading database ... 80%
+2025-09-29T00:37:36.234218795Z [inf]  (Reading database ... 85%
+2025-09-29T00:37:36.243191685Z [inf]  (Reading database ... 90%
+2025-09-29T00:37:36.25523727Z [inf]  (Reading database ... 95%
+2025-09-29T00:37:36.26616093Z [inf]  (Reading database ... 100%
+(Reading database ... 31574 files and directories currently installed.)
+
+2025-09-29T00:37:36.267282139Z [inf]  Preparing to unpack .../libpq-dev_15.14-0+deb12u1_amd64.deb ...
+
+2025-09-29T00:37:36.271510845Z [inf]  Unpacking libpq-dev (15.14-0+deb12u1) over (15.12-0+deb12u2) ...
+
+2025-09-29T00:37:36.320670879Z [inf]  Preparing to unpack .../libpq5_15.14-0+deb12u1_amd64.deb ...
+
+2025-09-29T00:37:36.325905969Z [inf]  Unpacking libpq5:amd64 (15.14-0+deb12u1) over (15.12-0+deb12u2) ...
+
+2025-09-29T00:37:36.381329479Z [inf]  Setting up libpq5:amd64 (15.14-0+deb12u1) ...
+
+2025-09-29T00:37:36.38498814Z [inf]  Setting up libpq-dev (15.14-0+deb12u1) ...
+
+2025-09-29T00:37:36.388597206Z [inf]  Processing triggers for libc-bin (2.36-9+deb12u10) ...
+
+2025-09-29T00:37:36.972244370Z [inf]  install apt packages: libpq-dev
+2025-09-29T00:37:36.972815563Z [inf]  mkdir /etc/mise
+2025-09-29T00:37:36.989224517Z [inf]  mkdir /etc/mise
+2025-09-29T00:37:36.989880600Z [inf]  create mise config
+2025-09-29T00:37:37.007498748Z [inf]  create mise config
+2025-09-29T00:37:37.008556334Z [inf]  install mise packages: python
+2025-09-29T00:37:37.248764163Z [inf]  Hit:1 http://deb.debian.org/debian bookworm InRelease
+Hit:2 http://deb.debian.org/debian bookworm-updates InRelease
+Hit:3 http://deb.debian.org/debian-security bookworm-security InRelease
+
+2025-09-29T00:37:37.376825705Z [inf]  Reading package lists...
+2025-09-29T00:37:37.800856553Z [inf]  
+
+2025-09-29T00:37:37.804946142Z [inf]  mise python@3.13.7   install
+
+2025-09-29T00:37:37.816977926Z [inf]  Reading package lists...
+2025-09-29T00:37:37.908193443Z [inf]  mise python@3.13.7   download cpython-3.13.7+20250918-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz
+
+2025-09-29T00:37:38.178835602Z [inf]  mise python@3.13.7   extract cpython-3.13.7+20250918-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz
+
+2025-09-29T00:37:38.245676688Z [inf]  
+
+2025-09-29T00:37:38.258234485Z [inf]  Building dependency tree...
+2025-09-29T00:37:38.347898912Z [inf]  
+Reading state information...
+2025-09-29T00:37:38.348197961Z [inf]  
+
+2025-09-29T00:37:38.453619733Z [inf]  The following additional packages will be installed:
+
+2025-09-29T00:37:38.453693523Z [inf]    krb5-locales libgssapi-krb5-2 libk5crypto3 libkeyutils1 libkrb5-3
+
+2025-09-29T00:37:38.453901627Z [inf]    libkrb5support0 libldap-2.5-0 libldap-common libsasl2-2 libsasl2-modules
+
+2025-09-29T00:37:38.454211882Z [inf]    libsasl2-modules-db
+
+2025-09-29T00:37:38.454813074Z [inf]  Suggested packages:
+  krb5-doc krb5-user libsasl2-modules-gssapi-mit
+  | libsasl2-modules-gssapi-heimdal libsasl2-modules-ldap libsasl2-modules-otp
+  libsasl2-modules-sql
+
+2025-09-29T00:37:38.512113282Z [inf]  The following NEW packages will be installed:
+
+2025-09-29T00:37:38.512236837Z [inf]    krb5-locales libgssapi-krb5-2 libk5crypto3 libkeyutils1 libkrb5-3
+
+2025-09-29T00:37:38.512499387Z [inf]    libkrb5support0 libldap-2.5-0 libldap-common libpq5 libsasl2-2
+
+2025-09-29T00:37:38.512752982Z [inf]    libsasl2-modules libsasl2-modules-db
+
+2025-09-29T00:37:38.532119453Z [inf]  0 upgraded, 12 newly installed, 0 to remove and 27 not upgraded.
+Need to get 1207 kB of archives.
+After this operation, 4343 kB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bookworm/main amd64 krb5-locales all 1.20.1-2+deb12u4 [63.4 kB]
+
+2025-09-29T00:37:38.535729715Z [inf]  Get:2 http://deb.debian.org/debian bookworm/main amd64 libkrb5support0 amd64 1.20.1-2+deb12u4 [33.2 kB]
+
+2025-09-29T00:37:38.536078505Z [inf]  Get:3 http://deb.debian.org/debian bookworm/main amd64 libk5crypto3 amd64 1.20.1-2+deb12u4 [79.8 kB]
+
+2025-09-29T00:37:38.537466894Z [inf]  Get:4 http://deb.debian.org/debian bookworm/main amd64 libkeyutils1 amd64 1.6.3-2 [8808 B]
+
+2025-09-29T00:37:38.537608227Z [inf]  Get:5 http://deb.debian.org/debian bookworm/main amd64 libkrb5-3 amd64 1.20.1-2+deb12u4 [334 kB]
+
+2025-09-29T00:37:38.539955525Z [inf]  Get:6 http://deb.debian.org/debian bookworm/main amd64 libgssapi-krb5-2 amd64 1.20.1-2+deb12u4 [135 kB]
+
+2025-09-29T00:37:38.540728493Z [inf]  Get:7 http://deb.debian.org/debian bookworm/main amd64 libsasl2-modules-db amd64 2.1.28+dfsg-10 [20.3 kB]
+
+2025-09-29T00:37:38.540938689Z [inf]  Get:8 http://deb.debian.org/debian bookworm/main amd64 libsasl2-2 amd64 2.1.28+dfsg-10 [59.7 kB]
+
+2025-09-29T00:37:38.541363591Z [inf]  Get:9 http://deb.debian.org/debian bookworm/main amd64 libldap-2.5-0 amd64 2.5.13+dfsg-5 [183 kB]
+
+2025-09-29T00:37:38.542551574Z [inf]  Get:10 http://deb.debian.org/debian bookworm/main amd64 libldap-common all 2.5.13+dfsg-5 [29.3 kB]
+
+2025-09-29T00:37:38.542840855Z [inf]  Get:11 http://deb.debian.org/debian bookworm/main amd64 libpq5 amd64 15.14-0+deb12u1 [194 kB]
+
+2025-09-29T00:37:38.543860285Z [inf]  Get:12 http://deb.debian.org/debian bookworm/main amd64 libsasl2-modules amd64 2.1.28+dfsg-10 [66.6 kB]
+
+2025-09-29T00:37:38.660605689Z [inf]  debconf: delaying package configuration, since apt-utils is not installed
+
+2025-09-29T00:37:38.680822946Z [inf]  Fetched 1207 kB in 0s (44.3 MB/s)
+
+2025-09-29T00:37:38.693905148Z [inf]  Selecting previously unselected package krb5-locales.
+(Reading database ... 
+2025-09-29T00:37:38.694786584Z [inf]  (Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+2025-09-29T00:37:38.697866982Z [inf]  (Reading database ... 75%
+2025-09-29T00:37:38.700280917Z [inf]  (Reading database ... 80%
+2025-09-29T00:37:38.702902748Z [inf]  (Reading database ... 85%
+2025-09-29T00:37:38.705282872Z [inf]  (Reading database ... 90%
+2025-09-29T00:37:38.709399417Z [inf]  (Reading database ... 95%
+2025-09-29T00:37:38.712340698Z [inf]  (Reading database ... 100%
+(Reading database ... 6614 files and directories currently installed.)
+
+2025-09-29T00:37:38.71287454Z [inf]  Preparing to unpack .../00-krb5-locales_1.20.1-2+deb12u4_all.deb ...
+
+2025-09-29T00:37:38.714573724Z [inf]  Unpacking krb5-locales (1.20.1-2+deb12u4) ...
+
+2025-09-29T00:37:38.73397237Z [inf]  Selecting previously unselected package libkrb5support0:amd64.
+
+2025-09-29T00:37:38.734882116Z [inf]  Preparing to unpack .../01-libkrb5support0_1.20.1-2+deb12u4_amd64.deb ...
+
+2025-09-29T00:37:38.7376458Z [inf]  Unpacking libkrb5support0:amd64 (1.20.1-2+deb12u4) ...
+
+2025-09-29T00:37:38.755710644Z [inf]  Selecting previously unselected package libk5crypto3:amd64.
+
+2025-09-29T00:37:38.756782311Z [inf]  Preparing to unpack .../02-libk5crypto3_1.20.1-2+deb12u4_amd64.deb ...
+
+2025-09-29T00:37:38.757998934Z [inf]  Unpacking libk5crypto3:amd64 (1.20.1-2+deb12u4) ...
+
+2025-09-29T00:37:38.778632468Z [inf]  Selecting previously unselected package libkeyutils1:amd64.
+
+2025-09-29T00:37:38.779618211Z [inf]  Preparing to unpack .../03-libkeyutils1_1.6.3-2_amd64.deb ...
+
+2025-09-29T00:37:38.78088854Z [inf]  Unpacking libkeyutils1:amd64 (1.6.3-2) ...
+
+2025-09-29T00:37:38.792560392Z [inf]  mise python@3.13.7   python --version
+
+2025-09-29T00:37:38.794051557Z [inf]  mise python@3.13.7   Python 3.13.7
+
+2025-09-29T00:37:38.796627042Z [inf]  Selecting previously unselected package libkrb5-3:amd64.
+
+2025-09-29T00:37:38.797663165Z [inf]  Preparing to unpack .../04-libkrb5-3_1.20.1-2+deb12u4_amd64.deb ...
+
+2025-09-29T00:37:38.798870007Z [inf]  Unpacking libkrb5-3:amd64 (1.20.1-2+deb12u4) ...
+
+2025-09-29T00:37:38.799337464Z [inf]  mise python@3.13.7 ✓ installed
+
+2025-09-29T00:37:38.857697367Z [inf]  Selecting previously unselected package libgssapi-krb5-2:amd64.
+
+2025-09-29T00:37:38.858830542Z [inf]  Preparing to unpack .../05-libgssapi-krb5-2_1.20.1-2+deb12u4_amd64.deb ...
+
+2025-09-29T00:37:38.860966606Z [inf]  Unpacking libgssapi-krb5-2:amd64 (1.20.1-2+deb12u4) ...
+
+2025-09-29T00:37:38.894951099Z [inf]  Selecting previously unselected package libsasl2-modules-db:amd64.
+
+2025-09-29T00:37:38.896004016Z [inf]  Preparing to unpack .../06-libsasl2-modules-db_2.1.28+dfsg-10_amd64.deb ...
+
+2025-09-29T00:37:38.89756407Z [inf]  Unpacking libsasl2-modules-db:amd64 (2.1.28+dfsg-10) ...
+
+2025-09-29T00:37:38.919964407Z [inf]  Selecting previously unselected package libsasl2-2:amd64.
+
+2025-09-29T00:37:38.920910208Z [inf]  Preparing to unpack .../07-libsasl2-2_2.1.28+dfsg-10_amd64.deb ...
+
+2025-09-29T00:37:38.923416081Z [inf]  Unpacking libsasl2-2:amd64 (2.1.28+dfsg-10) ...
+
+2025-09-29T00:37:38.945171284Z [inf]  Selecting previously unselected package libldap-2.5-0:amd64.
+
+2025-09-29T00:37:38.946168776Z [inf]  Preparing to unpack .../08-libldap-2.5-0_2.5.13+dfsg-5_amd64.deb ...
+
+2025-09-29T00:37:38.947841442Z [inf]  Unpacking libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...
+
+2025-09-29T00:37:38.984417835Z [inf]  Selecting previously unselected package libldap-common.
+
+2025-09-29T00:37:38.985479948Z [inf]  Preparing to unpack .../09-libldap-common_2.5.13+dfsg-5_all.deb ...
+
+2025-09-29T00:37:38.987113103Z [inf]  Unpacking libldap-common (2.5.13+dfsg-5) ...
+
+2025-09-29T00:37:39.005995923Z [inf]  Selecting previously unselected package libpq5:amd64.
+
+2025-09-29T00:37:39.006868575Z [inf]  Preparing to unpack .../10-libpq5_15.14-0+deb12u1_amd64.deb ...
+
+2025-09-29T00:37:39.008358432Z [inf]  Unpacking libpq5:amd64 (15.14-0+deb12u1) ...
+
+2025-09-29T00:37:39.040857993Z [inf]  Selecting previously unselected package libsasl2-modules:amd64.
+
+2025-09-29T00:37:39.041972177Z [inf]  Preparing to unpack .../11-libsasl2-modules_2.1.28+dfsg-10_amd64.deb ...
+
+2025-09-29T00:37:39.048745643Z [inf]  Unpacking libsasl2-modules:amd64 (2.1.28+dfsg-10) ...
+
+2025-09-29T00:37:39.070550787Z [inf]  install mise packages: python
+2025-09-29T00:37:39.071548002Z [inf]  python -m venv /app/.venv
+2025-09-29T00:37:39.073446095Z [inf]  Setting up libkeyutils1:amd64 (1.6.3-2) ...
+
+2025-09-29T00:37:39.076845771Z [inf]  Setting up libsasl2-modules:amd64 (2.1.28+dfsg-10) ...
+
+2025-09-29T00:37:39.083582127Z [inf]  Setting up krb5-locales (1.20.1-2+deb12u4) ...
+
+2025-09-29T00:37:39.086630202Z [inf]  Setting up libldap-common (2.5.13+dfsg-5) ...
+
+2025-09-29T00:37:39.090415096Z [inf]  Setting up libkrb5support0:amd64 (1.20.1-2+deb12u4) ...
+
+2025-09-29T00:37:39.094047519Z [inf]  Setting up libsasl2-modules-db:amd64 (2.1.28+dfsg-10) ...
+
+2025-09-29T00:37:39.097039274Z [inf]  Setting up libk5crypto3:amd64 (1.20.1-2+deb12u4) ...
+
+2025-09-29T00:37:39.099781156Z [inf]  Setting up libsasl2-2:amd64 (2.1.28+dfsg-10) ...
+
+2025-09-29T00:37:39.103340902Z [inf]  Setting up libkrb5-3:amd64 (1.20.1-2+deb12u4) ...
+
+2025-09-29T00:37:39.106370359Z [inf]  Setting up libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...
+
+2025-09-29T00:37:39.109784754Z [inf]  Setting up libgssapi-krb5-2:amd64 (1.20.1-2+deb12u4) ...
+
+2025-09-29T00:37:39.113879752Z [inf]  Setting up libpq5:amd64 (15.14-0+deb12u1) ...
+
+2025-09-29T00:37:39.117328648Z [inf]  Processing triggers for libc-bin (2.36-9+deb12u10) ...
+
+2025-09-29T00:37:39.163353135Z [inf]  install apt packages: libpq5
+2025-09-29T00:37:39.698946316Z [inf]  copy /mise/shims
+2025-09-29T00:37:39.698990934Z [inf]  copy /mise/installs
+2025-09-29T00:37:39.699002095Z [inf]  copy /usr/local/bin/mise
+2025-09-29T00:37:39.699010070Z [inf]  copy /etc/mise/config.toml
+2025-09-29T00:37:39.699017347Z [inf]  copy /root/.local/state/mise
+2025-09-29T00:37:41.889294509Z [inf]  python -m venv /app/.venv
+2025-09-29T00:37:41.890640254Z [inf]  copy requirements.txt
+2025-09-29T00:37:41.905313710Z [inf]  copy requirements.txt
+2025-09-29T00:37:41.905920751Z [inf]  pip install -r requirements.txt
+2025-09-29T00:37:42.655805512Z [inf]  Collecting flask==3.0.3 (from -r requirements.txt (line 1))
+
+2025-09-29T00:37:42.67152619Z [inf]    Downloading flask-3.0.3-py3-none-any.whl.metadata (3.2 kB)
+
+2025-09-29T00:37:42.686775937Z [inf]  Collecting waitress==3.0.0 (from -r requirements.txt (line 2))
+
+2025-09-29T00:37:42.692194761Z [inf]    Downloading waitress-3.0.0-py3-none-any.whl.metadata (4.2 kB)
+
+2025-09-29T00:37:42.769321901Z [inf]  Collecting pandas==2.2.2 (from -r requirements.txt (line 3))
+
+2025-09-29T00:37:42.773654112Z [inf]    Downloading pandas-2.2.2.tar.gz (4.4 MB)
+
+2025-09-29T00:37:42.815507057Z [inf]       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.4/4.4 MB 119.4 MB/s  0:00:00
+2025-09-29T00:37:42.815637576Z [inf]  
+
+2025-09-29T00:37:43.350216173Z [inf]    Installing build dependencies: started
+
+2025-09-29T00:37:45.685095803Z [inf]    Installing build dependencies: finished with status 'done'
+
+2025-09-29T00:37:45.685632225Z [inf]    Getting requirements to build wheel: started
+
+2025-09-29T00:37:46.108740841Z [inf]    Getting requirements to build wheel: finished with status 'done'
+
+2025-09-29T00:37:46.110445681Z [inf]    Installing backend dependencies: started
+
+2025-09-29T00:37:46.962698959Z [inf]    Installing backend dependencies: finished with status 'done'
+
+2025-09-29T00:37:46.96354944Z [inf]    Preparing metadata (pyproject.toml): started
+
+2025-09-29T00:38:25.214226475Z [inf]    Preparing metadata (pyproject.toml): finished with status 'error'
+
+2025-09-29T00:38:25.225817161Z [inf]    error: subprocess-exited-with-error
+  
+  × Preparing metadata (pyproject.toml) did not run successfully.
+  │ exit code: 1
+  ╰─> [172 lines of output]
+      + meson setup /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/.mesonpy-mr8hcvqd/build -Dbuildtype=release -Db_ndebug=if-release -Db_vscrt=md --vsenv --native-file=/tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/.mesonpy-mr8hcvqd/build/meson-python-native-file.ini
+      The Meson build system
+      Version: 1.2.1
+      Source dir: /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e
+      Build dir: /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/.mesonpy-mr8hcvqd/build
+      Build type: native build
+      Project name: pandas
+      Project version: 2.2.2
+      C compiler for the host machine: cc (gcc 12.2.0 "cc (Debian 12.2.0-14) 12.2.0")
+      C linker for the host machine: cc ld.bfd 2.40
+      C++ compiler for the host machine: c++ (gcc 12.2.0 "c++ (Debian 12.2.0-14) 12.2.0")
+      C++ linker for the host machine: c++ ld.bfd 2.40
+      Cython compiler for the host machine: cython (cython 3.0.5)
+      Host machine cpu family: x86_64
+      Host machine cpu: x86_64
+      Program python found: YES (/app/.venv/bin/python)
+      Found pkg-config: /usr/bin/pkg-config (1.8.1)
+      Run-time dependency python found: YES 3.13
+      Build targets in project: 53
+      
+      pandas 2.2.2
+      
+        User defined options
+          Native files: /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/.mesonpy-mr8hcvqd/build/meson-python-native-file.ini
+          buildtype   : release
+          vsenv       : True
+          b_ndebug    : if-release
+          b_vscrt     : md
+      
+      Found ninja-1.13.0.git.kitware.jobserver-pipe-1 at /tmp/pip-build-env-y89nyafq/normal/bin/ninja
+      
+      Visual Studio environment is needed to run Ninja. It is recommended to use Meson wrapper:
+      /tmp/pip-build-env-y89nyafq/overlay/bin/meson compile -C .
+      + /tmp/pip-build-env-y89nyafq/normal/bin/ninja
+      [1/151] Generating pandas/_libs/algos_common_helper_pxi with a custom command
+      [2/151] Generating pandas/_libs/khash_primitive_helper_pxi with a custom command
+      [3/151] Generating pandas/_libs/intervaltree_helper_pxi with a custom command
+      [4/151] Generating pandas/_libs/algos_take_helper_pxi with a custom command
+      [5/151] Generating pandas/_libs/hashtable_func_helper_pxi with a custom command
+      [6/151] Generating pandas/_libs/index_class_helper_pxi with a custom command
+      [7/151] Generating pandas/_libs/hashtable_class_helper_pxi with a custom command
+      [8/151] Generating pandas/_libs/sparse_op_helper_pxi with a custom command
+      [9/151] Compiling C object pandas/_libs/pandas_datetime.cpython-313-x86_64-linux-gnu.so.p/src_datetime_date_conversions.c.o
+      [10/151] Compiling C object pandas/_libs/pandas_parser.cpython-313-x86_64-linux-gnu.so.p/src_parser_io.c.o
+      [11/151] Compiling C object pandas/_libs/pandas_parser.cpython-313-x86_64-linux-gnu.so.p/src_parser_pd_parser.c.o
+      [12/151] Compiling C object pandas/_libs/pandas_datetime.cpython-313-x86_64-linux-gnu.so.p/src_datetime_pd_datetime.c.o
+      [13/151] Compiling C object pandas/_libs/parsers.cpython-313-x86_64-linux-gnu.so.p/src_parser_io.c.o
+      [14/151] Compiling C object pandas/_libs/json.cpython-313-x86_64-linux-gnu.so.p/src_vendored_ujson_python_ujson.c.o
+      [15/151] Compiling C object pandas/_libs/pandas_datetime.cpython-313-x86_64-linux-gnu.so.p/src_vendored_numpy_datetime_np_datetime.c.o
+      [16/151] Compiling C object pandas/_libs/pandas_datetime.cpython-313-x86_64-linux-gnu.so.p/src_vendored_numpy_datetime_np_datetime_strings.c.o
+      [17/151] Compiling C object pandas/_libs/json.cpython-313-x86_64-linux-gnu.so.p/src_vendored_ujson_python_JSONtoObj.c.o
+      [18/151] Linking target pandas/_libs/pandas_datetime.cpython-313-x86_64-linux-gnu.so
+      [19/151] Compiling C object pandas/_libs/json.cpython-313-x86_64-linux-gnu.so.p/src_vendored_ujson_lib_ultrajsondec.c.o
+      [20/151] Generating pandas/__init__.py with a custom command
+      [21/151] Compiling C object pandas/_libs/json.cpython-313-x86_64-linux-gnu.so.p/src_vendored_ujson_lib_ultrajsonenc.c.o
+      [22/151] Compiling C object pandas/_libs/pandas_parser.cpython-313-x86_64-linux-gnu.so.p/src_parser_tokenizer.c.o
+      [23/151] Compiling C object pandas/_libs/lib.cpython-313-x86_64-linux-gnu.so.p/src_parser_tokenizer.c.o
+      [24/151] Linking target pandas/_libs/pandas_parser.cpython-313-x86_64-linux-gnu.so
+      [25/151] Compiling C object pandas/_libs/tslibs/parsing.cpython-313-x86_64-linux-gnu.so.p/.._src_parser_tokenizer.c.o
+      [26/151] Compiling C object pandas/_libs/json.cpython-313-x86_64-linux-gnu.so.p/src_vendored_ujson_python_objToJSON.c.o
+      [27/151] Linking target pandas/_libs/json.cpython-313-x86_64-linux-gnu.so
+      [28/151] Compiling C object pandas/_libs/parsers.cpython-313-x86_64-linux-gnu.so.p/src_parser_tokenizer.c.o
+      [29/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/indexing.pyx
+      [30/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/ops_dispatch.pyx
+      [31/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/byteswap.pyx
+      [32/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/base.pyx
+      [33/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/properties.pyx
+      [34/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/ccalendar.pyx
+      [35/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/missing.pyx
+      [36/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/dtypes.pyx
+      [37/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/testing.pyx
+      [38/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/nattype.pyx
+      warning: /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/nattype.pyx:79:0: Global name __nat_unpickle matched from within class scope in contradiction to to Python 'class private name' rules. This may change in a future release.
+      warning: /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/nattype.pyx:79:0: Global name __nat_unpickle matched from within class scope in contradiction to to Python 'class private name' rules. This may change in a future release.
+      [39/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/arrays.pyx
+      [40/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/np_datetime.pyx
+      [41/151] Compiling C object pandas/_libs/tslibs/base.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_base.pyx.c.o
+      [42/151] Linking target pandas/_libs/tslibs/base.cpython-313-x86_64-linux-gnu.so
+      [43/151] Compiling C object pandas/_libs/indexing.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_indexing.pyx.c.o
+      [44/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/sas.pyx
+      [45/151] Linking target pandas/_libs/indexing.cpython-313-x86_64-linux-gnu.so
+      [46/151] Compiling C object pandas/_libs/byteswap.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_byteswap.pyx.c.o
+      [47/151] Linking target pandas/_libs/byteswap.cpython-313-x86_64-linux-gnu.so
+      [48/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/timezones.pyx
+      [49/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/ops.pyx
+      [50/151] Compiling C object pandas/_libs/ops_dispatch.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_ops_dispatch.pyx.c.o
+      [51/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/window/indexers.pyx
+      [52/151] Linking target pandas/_libs/ops_dispatch.cpython-313-x86_64-linux-gnu.so
+      [53/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/reshape.pyx
+      [54/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/hashing.pyx
+      [55/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/vectorized.pyx
+      [56/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/tzconversion.pyx
+      [57/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/writers.pyx
+      [58/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/timestamps.pyx
+      [59/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslib.pyx
+      [60/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/fields.pyx
+      [61/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/internals.pyx
+      [62/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/conversion.pyx
+      [63/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/parsing.pyx
+      [64/151] Compiling C object pandas/_libs/properties.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_properties.pyx.c.o
+      [65/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/strptime.pyx
+      [66/151] Linking target pandas/_libs/properties.cpython-313-x86_64-linux-gnu.so
+      [67/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/offsets.pyx
+      [68/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/window/aggregations.pyx
+      [69/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/timedeltas.pyx
+      [70/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/tslibs/period.pyx
+      [71/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/parsers.pyx
+      [72/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/lib.pyx
+      [73/151] Compiling C object pandas/_libs/tslibs/ccalendar.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_ccalendar.pyx.c.o
+      [74/151] Linking target pandas/_libs/tslibs/ccalendar.cpython-313-x86_64-linux-gnu.so
+      [75/151] Compiling C++ object pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_window_aggregations.pyx.cpp.o
+      FAILED: [code=1] pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_window_aggregations.pyx.cpp.o
+      c++ -Ipandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p -Ipandas/_libs/window -I../../pandas/_libs/window -I../../../../pip-build-env-y89nyafq/overlay/lib/python3.13/site-packages/numpy/_core/include -I../../pandas/_libs/include -I/mise/installs/python/3.13.7/lib/pkgconfig/../../include/python3.13 -fvisibility=hidden -fvisibility-inlines-hidden -fdiagnostics-color=always -DNDEBUG -D_FILE_OFFSET_BITS=64 -w -O3 -DNPY_NO_DEPRECATED_API=0 -DNPY_TARGET_VERSION=NPY_1_21_API_VERSION -fPIC -MD -MQ pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_window_aggregations.pyx.cpp.o -MF pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_window_aggregations.pyx.cpp.o.d -o pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_window_aggregations.pyx.cpp.o -c pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/pandas/_libs/window/aggregations.pyx.cpp
+      pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/pandas/_libs/window/aggregations.pyx.cpp:422:31: error: standard attributes in middle of decl-specifiers
+        422 |         #define CYTHON_UNUSED [[maybe_unused]]
+            |                               ^
+      pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/pandas/_libs/window/aggregations.pyx.cpp:2260:12: note: in expansion of macro ‘CYTHON_UNUSED’
+       2260 |     static CYTHON_UNUSED PyObject *__Pyx_KwargsAsDict_FASTCALL(PyObject *kwnames, PyObject *const *kwvalues);
+            |            ^~~~~~~~~~~~~
+      pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/pandas/_libs/window/aggregations.pyx.cpp:422:31: note: standard attributes must precede the decl-specifiers to apply to the declaration, or follow them to apply to the type
+        422 |         #define CYTHON_UNUSED [[maybe_unused]]
+            |                               ^
+      pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/pandas/_libs/window/aggregations.pyx.cpp:2260:12: note: in expansion of macro ‘CYTHON_UNUSED’
+       2260 |     static CYTHON_UNUSED PyObject *__Pyx_KwargsAsDict_FASTCALL(PyObject *kwnames, PyObject *const *kwvalues);
+            |            ^~~~~~~~~~~~~
+      pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/pandas/_libs/window/aggregations.pyx.cpp:422:31: error: standard attributes in middle of decl-specifiers
+        422 |         #define CYTHON_UNUSED [[maybe_unused]]
+            |                               ^
+      pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/pandas/_libs/window/aggregations.pyx.cpp:42115:8: note: in expansion of macro ‘CYTHON_UNUSED’
+      42115 | static CYTHON_UNUSED PyObject *__Pyx_KwargsAsDict_FASTCALL(PyObject *kwnames, PyObject *const *kwvalues) {
+            |        ^~~~~~~~~~~~~
+      pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/pandas/_libs/window/aggregations.pyx.cpp:422:31: note: standard attributes must precede the decl-specifiers to apply to the declaration, or follow them to apply to the type
+        422 |         #define CYTHON_UNUSED [[maybe_unused]]
+            |                               ^
+      pandas/_libs/window/aggregations.cpython-313-x86_64-linux-gnu.so.p/pandas/_libs/window/aggregations.pyx.cpp:42115:8: note: in expansion of macro ‘CYTHON_UNUSED’
+      42115 | static CYTHON_UNUSED PyObject *__Pyx_KwargsAsDict_FASTCALL(PyObject *kwnames, PyObject *const *kwvalues) {
+            |        ^~~~~~~~~~~~~
+      [76/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/index.pyx
+      [77/151] Compiling C object pandas/_libs/tslibs/np_datetime.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_np_datetime.pyx.c.o
+      [78/151] Compiling C object pandas/_libs/arrays.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_arrays.pyx.c.o
+      [79/151] Compiling C object pandas/_libs/testing.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_testing.pyx.c.o
+      [80/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/sparse.pyx
+      [81/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/interval.pyx
+      [82/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/join.pyx
+      [83/151] Compiling C object pandas/_libs/tslibs/nattype.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_nattype.pyx.c.o
+      [84/151] Compiling C object pandas/_libs/missing.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_missing.pyx.c.o
+      [85/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/hashtable.pyx
+      [86/151] Compiling C object pandas/_libs/window/indexers.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_window_indexers.pyx.c.o
+      [87/151] Compiling C object pandas/_libs/hashing.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_hashing.pyx.c.o
+      [88/151] Compiling C object pandas/_libs/tslibs/vectorized.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_vectorized.pyx.c.o
+      [89/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/algos.pyx
+      [90/151] Compiling C object pandas/_libs/sas.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_sas.pyx.c.o
+      [91/151] Compiling C object pandas/_libs/tslibs/dtypes.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_dtypes.pyx.c.o
+      [92/151] Compiling Cython source /tmp/pip-install-xvr85ym5/pandas_f467c9ef938c45bfb856f3080825584e/pandas/_libs/groupby.pyx
+      [93/151] Compiling C object pandas/_libs/writers.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_writers.pyx.c.o
+      [94/151] Compiling C object pandas/_libs/ops.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_ops.pyx.c.o
+      [95/151] Compiling C object pandas/_libs/tslibs/timezones.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_timezones.pyx.c.o
+      [96/151] Compiling C object pandas/_libs/reshape.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_reshape.pyx.c.o
+      [97/151] Compiling C object pandas/_libs/tslibs/conversion.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_conversion.pyx.c.o
+      [98/151] Compiling C object pandas/_libs/tslibs/tzconversion.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_tzconversion.pyx.c.o
+      [99/151] Compiling C object pandas/_libs/tslibs/fields.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_fields.pyx.c.o
+      [100/151] Compiling C object pandas/_libs/tslib.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslib.pyx.c.o
+      [101/151] Compiling C object pandas/_libs/internals.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_internals.pyx.c.o
+      [102/151] Compiling C object pandas/_libs/tslibs/parsing.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_parsing.pyx.c.o
+      [103/151] Compiling C object pandas/_libs/tslibs/strptime.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_strptime.pyx.c.o
+      [104/151] Compiling C object pandas/_libs/tslibs/period.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_period.pyx.c.o
+      [105/151] Compiling C object pandas/_libs/parsers.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_parsers.pyx.c.o
+      [106/151] Compiling C object pandas/_libs/tslibs/timestamps.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_timestamps.pyx.c.o
+      [107/151] Compiling C object pandas/_libs/tslibs/timedeltas.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_timedeltas.pyx.c.o
+      [108/151] Compiling C object pandas/_libs/lib.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_lib.pyx.c.o
+      [109/151] Compiling C object pandas/_libs/tslibs/offsets.cpython-313-x86_64-linux-gnu.so.p/meson-generated_pandas__libs_tslibs_offsets.pyx.c.o
+      ninja: build stopped: subcommand failed.
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+
+2025-09-29T00:38:25.227109661Z [inf]  error: metadata-generation-failed
+
+× Encountered error while generating package metadata.
+╰─> See above for output.
+
+note: This is an issue with the package mentioned above, not pip.
+hint: See above for details.
+
+2025-09-29T00:38:25.511564456Z [err]  pip install -r requirements.txt
+2025-09-29T00:38:25.527324636Z [err]  ERROR: failed to build: failed to solve: process "pip install -r requirements.txt" did not complete successfully: exit code: 1

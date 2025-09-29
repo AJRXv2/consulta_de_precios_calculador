@@ -50,34 +50,61 @@ app.config['UPLOAD_FOLDER'] = LISTAS_PATH
 
 # --- DB CONFIG ---
 DATABASE_URL = os.getenv('DATABASE_URL') if psycopg2 else None
+DEBUG_LOG = os.getenv('DEBUG_LOG', '0') == '1'
+
+def log_debug(*parts):
+    if DEBUG_LOG:
+        try:
+            print('[DEBUG]', *parts, flush=True)
+        except Exception:
+            pass
 
 def get_pg_conn():
     if not DATABASE_URL or not psycopg2:
+        log_debug('get_pg_conn: sin DATABASE_URL o psycopg2 no disponible.')
         return None
-    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    try:
+        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+        log_debug('Conexión PostgreSQL establecida.')
+        return conn
+    except Exception as e:
+        log_debug('Error conectando a PostgreSQL:', e)
+        return None
 
 def ensure_tables():
     if not DATABASE_URL or not psycopg2:
+        log_debug('ensure_tables: se omite (sin DB).')
         return
-    with get_pg_conn() as conn, conn.cursor() as cur:
-        cur.execute("""
-        CREATE TABLE IF NOT EXISTS proveedores (
-            id TEXT PRIMARY KEY,
-            data JSONB NOT NULL
-        );
-        CREATE TABLE IF NOT EXISTS historial (
-            id_historial TEXT PRIMARY KEY,
-            timestamp TEXT NOT NULL,
-            tipo_calculo TEXT,
-            proveedor_nombre TEXT,
-            producto TEXT,
-            precio_base DOUBLE PRECISION,
-            porcentajes JSONB,
-            precio_final DOUBLE PRECISION,
-            observaciones TEXT
-        );
-        """)
-    
+    conn = get_pg_conn()
+    if not conn:
+        log_debug('ensure_tables: no se pudo obtener conexión.')
+        return
+    try:
+        with conn, conn.cursor() as cur:
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS proveedores (
+                id TEXT PRIMARY KEY,
+                data JSONB NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS historial (
+                id_historial TEXT PRIMARY KEY,
+                timestamp TEXT NOT NULL,
+                tipo_calculo TEXT,
+                proveedor_nombre TEXT,
+                producto TEXT,
+                precio_base DOUBLE PRECISION,
+                porcentajes JSONB,
+                precio_final DOUBLE PRECISION,
+                observaciones TEXT
+            );
+            """)
+        log_debug('ensure_tables: tablas verificadas.')
+    except Exception as e:
+        log_debug('ensure_tables: error creando tablas:', e)
+    finally:
+        try: conn.close()
+        except Exception: pass
+
 ensure_tables()
 
 # --- ESTRUCTURA DE DATOS POR DEFECTO ---
@@ -193,6 +220,7 @@ def load_proveedores():
                 conn.commit()
                 return json.loads(json.dumps(default_proveedores))
         except Exception as e:
+            log_debug('load_proveedores: fallo PG', e)
             print(f"[WARN] load_proveedores PG fallo: {e}. Se usa JSON local.")
     if os.path.exists(DATA_FILE):
         try:
@@ -221,6 +249,7 @@ def save_proveedores(data):
                 conn.commit()
                 return
         except Exception as e:
+            log_debug('save_proveedores: fallo PG', e)
             print(f"[WARN] save_proveedores PG fallo: {e}. Se intenta fallback JSON.")
     dirpath = os.path.dirname(DATA_FILE) or "."
     fd, tmp_path = tempfile.mkstemp(dir=dirpath)
@@ -241,6 +270,7 @@ def load_historial():
                 rows = cur.fetchall()
                 return rows
         except Exception as e:
+            log_debug('load_historial: fallo PG', e)
             print(f"[WARN] load_historial PG fallo: {e}. Usando JSON local.")
     if not os.path.exists(HISTORIAL_FILE):
         return []
@@ -266,6 +296,7 @@ def atomic_save_historial_list(historial_list):
                 conn.commit()
                 return
         except Exception as e:
+            log_debug('atomic_save_historial_list: fallo PG', e)
             print(f"[WARN] atomic_save_historial_list PG fallo: {e}. Fallback JSON.")
     dirpath = os.path.dirname(HISTORIAL_FILE) or "."
     fd, tmp_path = tempfile.mkstemp(dir=dirpath)
@@ -291,6 +322,7 @@ def add_entry_to_historial(nueva_entrada):
                 conn.commit()
                 return
         except Exception as e:
+            log_debug('add_entry_to_historial: fallo PG', e)
             print(f"[WARN] add_entry_to_historial PG fallo: {e}. Se usa JSON.")
     historial_actual = load_historial() or []
     historial_actual.append(nueva_entrada)
@@ -787,6 +819,21 @@ def download_lista(filename):
     if not os.path.isfile(file_path):
         abort(404)
     return send_from_directory(LISTAS_PATH, filename, as_attachment=True)
+
+@app.route('/health')
+def health():
+    modo_storage = 'postgresql' if (DATABASE_URL and psycopg2) else 'json'
+    prov_count = 'n/a'
+    try:
+        prov_count = len(proveedores)
+    except Exception:
+        pass
+    return {
+        'status': 'ok',
+        'storage': modo_storage,
+        'proveedores': prov_count,
+        'debug': DEBUG_LOG
+    }, 200
 
 def abrir_navegador():
     webbrowser.open_new('http://127.0.0.1:5000/')
