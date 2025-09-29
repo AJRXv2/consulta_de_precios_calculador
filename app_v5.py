@@ -9,6 +9,23 @@ from threading import Timer
 from waitress import serve
 import uuid 
 from datetime import datetime
+try:
+    from zoneinfo import ZoneInfo
+    APP_TZ_NAME = os.getenv('APP_TZ', 'America/Argentina/Buenos_Aires')
+    _APP_TZ = ZoneInfo(APP_TZ_NAME)
+except Exception:
+    _APP_TZ = None
+
+def now_local():
+    """Devuelve datetime ahora en la zona configurada (Argentina por defecto)."""
+    return datetime.now(_APP_TZ) if _APP_TZ else datetime.now()
+
+def ts_to_local(ts: float):
+    """Convierte un timestamp (epoch seconds) a datetime local."""
+    try:
+        return datetime.fromtimestamp(ts, _APP_TZ) if _APP_TZ else datetime.fromtimestamp(ts)
+    except Exception:
+        return datetime.fromtimestamp(ts)
 import pandas as pd
 import re
 import unicodedata
@@ -477,7 +494,7 @@ def inferir_nombre_base_archivo(nombre_original, proveedores_dict):
 
 def humanizar_tiempo_desde(timestamp_segundos):
     try:
-        delta = datetime.now() - datetime.fromtimestamp(timestamp_segundos)
+        delta = now_local() - ts_to_local(timestamp_segundos)
         if delta.days > 0:
             return f"{delta.days} día(s) atrás"
         horas = delta.seconds // 3600
@@ -689,7 +706,7 @@ def index():
                     nombre_visible_prov = generar_nombre_visible(proveedores[proveedor_id])
                     resultado_auto = f"{formatear_precio(precio_final)} (Proveedor: {nombre_visible_prov})"
                     add_entry_to_historial({
-                        "id_historial": str(uuid.uuid4()), "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "id_historial": str(uuid.uuid4()), "timestamp": now_local().strftime("%Y-%m-%d %H:%M:%S"),
                         "tipo_calculo": "Automático", "proveedor_nombre": nombre_visible_prov,
                         "producto": producto_label or "N/A", # Guardar el producto
                         "precio_base": precio, "porcentajes": {"descuento": descuentos[0], "iva": iva, "ganancia": ganancias[0]},
@@ -729,7 +746,7 @@ def index():
                     mensaje = "✅ Cálculo Manual Realizado y Guardado en Historial."
                     
                     add_entry_to_historial({
-                        "id_historial": str(uuid.uuid4()), "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "id_historial": str(uuid.uuid4()), "timestamp": now_local().strftime("%Y-%m-%d %H:%M:%S"),
                         "tipo_calculo": "Manual", "proveedor_nombre": nombre_prov_label, 
                         "producto": producto_label or "N/A", "precio_base": precio,
                         "porcentajes": {
@@ -830,7 +847,7 @@ def index():
                         nombre_base = override_prov or inferir_nombre_base_archivo(nombre_orig, proveedores)
                         # Construir fecha
                         fecha_formato = "%d%m%Y" if incluir_dia else "%m%Y"
-                        fecha_str = datetime.now().strftime(fecha_formato)
+                        fecha_str = now_local().strftime(fecha_formato)
                         nombre_final = f"{nombre_base}-{fecha_str}{ext}"
                         ruta_final = os.path.join(LISTAS_PATH, nombre_final)
                         # Marcar como OLD las listas previas vigentes del mismo proveedor
@@ -848,7 +865,7 @@ def index():
                                     old_dst = os.path.join(LISTAS_PATH, propuesta)
                                     if os.path.exists(old_dst):
                                         # evitar colisión añadiendo timestamp
-                                        ts = datetime.now().strftime('%H%M%S')
+                                        ts = now_local().strftime('%H%M%S')
                                         old_dst = os.path.join(LISTAS_PATH, f"{base_no_ext}-OLD-{ts}{ext_exist}")
                                     os.rename(old_src, old_dst)
                         except Exception as e_mark:
@@ -886,7 +903,7 @@ def index():
                 ultimas_actualizaciones[nombre_match] = {
                     'filename': fname,
                     'mtime': mtime,
-                    'fecha': datetime.fromtimestamp(mtime).strftime('%d/%m/%Y %H:%M'),
+                    'fecha': ts_to_local(mtime).strftime('%d/%m/%Y %H:%M'),
                     'hace': humanizar_tiempo_desde(mtime)
                 }
     except Exception:
@@ -904,7 +921,7 @@ def index():
             full_path = os.path.join(LISTAS_PATH, fname)
             info = {
                 'filename': fname,
-                'fecha': datetime.fromtimestamp(os.path.getmtime(full_path)).strftime('%d/%m/%Y %H:%M')
+                'fecha': ts_to_local(os.path.getmtime(full_path)).strftime('%d/%m/%Y %H:%M')
             }
             if 'old' in fname.lower():
                 listas_old.append(info)
